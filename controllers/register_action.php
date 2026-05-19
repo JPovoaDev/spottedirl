@@ -1,34 +1,48 @@
 <?php
+// este ficheiro processa o formulário de registo que vem do register.php
+// valida os dados recebidos, verifica se o utilizador já existe e cria a conta na base de dados
+// tal como os outros controladores não tem HTML nenhum, só lógica e redirecionamentos
 session_start();
 require_once '../db.php';
 
+// se alguém tentar aceder diretamente pelo URL redirecionamos para o registo sem fazer nada
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../views/register.php');
     exit;
 }
 
+// lemos os campos do formulário e limpamos espaços desnecessários com o trim no username e email
+// na password não usamos trim porque um espaço no início ou no fim pode ser intencional
 $username = trim($_POST['username'] ?? '');
 $email    = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
-// Validação básica
+// validamos que nenhum campo chegou vazio antes de fazer qualquer operação na base de dados
+// não faz sentido ir à BD verificar duplicados se os campos estiverem vazios
 if (!$username || !$email || !$password) {
     $_SESSION['error'] = 'Preenche todos os campos.';
     header('Location: ../views/register.php');
     exit;
 }
+
+// o filter_var com FILTER_VALIDATE_EMAIL usa a lógica interna do PHP para verificar o formato do email
+// verifica que tem um @ no sítio certo e um domínio com a estrutura esperada, mas
+// não verifica se o email existe nesno, só se o formato está correto
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $_SESSION['error'] = 'Email inválido.';
     header('Location: ../views/register.php');
     exit;
 }
+
+// impomos um mínimo de 6 caracteres para a password
 if (strlen($password) < 6) {
     $_SESSION['error'] = 'A password deve ter pelo menos 6 caracteres.';
     header('Location: ../views/register.php');
     exit;
 }
 
-// Verificar se username ou email já existem
+// verificamos se o username ou o email já estão em uso numa só query com OR, se qualquer um dos dois já existir na base de dados não deixamos criar a conta
+// assim evitamos ter dois utilizadores com o mesmo username ou o mesmo email registado
 $stmt = $pdo->prepare('SELECT id FROM users WHERE username = ? OR email = ?');
 $stmt->execute([$username, $email]);
 if ($stmt->fetch()) {
@@ -37,14 +51,22 @@ if ($stmt->fetch()) {
     exit;
 }
 
-// Inserir utilizador com perfil 'user'
+// o password_hash gera um hash seguro da password usando bcrypt por defeito com PASSWORD_DEFAULT
+// o bcrypt é lento por design o que dificulta muito ataques de força bruta caso a base de dados seja comprometida
+// e também gera automaticamente um salt único para cada hash, o que significa que dois utilizadores com a mesma password têm hashes completamente diferentes
 $hash = password_hash($password, PASSWORD_DEFAULT);
+
+// criamos o utilizador com o perfil user que é o mais básico do sistema
+// só o administrador pode promover um utilizador para simpatizante ou admin depois do registo
+// o NOW() pede à base de dados a data e hora atual para o campo created_at
 $stmt = $pdo->prepare(
     'INSERT INTO users (username, email, password_hash, role, created_at)
      VALUES (?, ?, ?, \'user\', NOW())'
 );
 $stmt->execute([$username, $email, $hash]);
 
+// guardamos uma mensagem de sucesso na sessão e mandamos para o login
+// o login.php vai ler esta mensagem da sessão e mostrá-la a verde ao utilizador
 $_SESSION['success'] = 'Conta criada com sucesso. Faz login!';
 header('Location: ../views/login.php');
 exit;
