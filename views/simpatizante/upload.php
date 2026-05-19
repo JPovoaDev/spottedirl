@@ -7,6 +7,7 @@ require_role('simpatizante');
 $error = $_SESSION['error'] ?? null; unset($_SESSION['error']);
 $success = $_SESSION['success'] ?? null; unset($_SESSION['success']);
 
+// fazemos uma query para a bd de maneira a apanahr todas as categorias, tanto primarias como secundarias
 $cats = $pdo->query("SELECT id, name, type, parent_id FROM categories ORDER BY type, name")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -17,6 +18,8 @@ $cats = $pdo->query("SELECT id, name, type, parent_id FROM categories ORDER BY t
 <?php if ($error): ?><p style="color:red"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 <?php if ($success): ?><p style="color:green"><?= htmlspecialchars($success) ?></p><?php endif; ?>
 
+<!--Formulario do upload -->
+<!-- Uma vez este formulario for submetido, os dados serão processados pelo script upload_action.php -->
 <form method="POST" action="../../controllers/upload_action.php" enctype="multipart/form-data">
     <label>Ficheiro (foto/vídeo/áudio):<br>
         <input type="file" name="ficheiro" required accept="image/*,video/*,audio/*">
@@ -29,6 +32,7 @@ $cats = $pdo->query("SELECT id, name, type, parent_id FROM categories ORDER BY t
     <label>Categoria principal:
         <select name="categoria_principal">
             <option value="">— nenhuma —</option>
+            <!-- Aqui é um dropdown que mostra todas as categorias que a query  retornou, se não retornar nenhuma, mostra "-nenhuma-"-->
             <?php foreach ($cats as $c): ?>
                 <?php if ($c['type'] === 'principal'): ?>
                     <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['name']) ?></option>
