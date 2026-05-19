@@ -14,6 +14,7 @@ require_role('simpatizante');
 <h1>Painel Simpatizante</h1>
 
 <!-- é aqui que ele cria as categorias secundárias dentro das categorias principais do admin -->
-<a href="subcategories.php">As minhas subcategorias</a> |
+<a href="subcategories.php">As minhas subcategorias</a> 
+<a href="upload.php">Novo registo</a> ||
 <a href="../../controllers/logout.php">Logout</a>
 </body></html>

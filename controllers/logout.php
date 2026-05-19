@@ -12,5 +12,5 @@ session_destroy();
 
 // depois de destruir a sessão mandamos o utilizador para o login, não faz sentido ir para outra página porque já não está autenticado
 // e qualquer página protegida redirecionaria para aqui outra vez
-header('Location: ../views/login.php');
+header('Location: ../index.php');
 exit;

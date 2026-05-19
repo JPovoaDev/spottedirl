@@ -44,7 +44,7 @@ function require_role(string $min_role): void {
     }
 
     // a segunda verificação é se ele estiver autenticado mas não tem o perfil suficiente
-    // para aquela página específica então devolve um erro 403 (acesso gegado)
+    // para aquela página específica então devolve um erro 403 (acesso negado)
     if (!has_role($min_role)) {
         http_response_code(403);
         echo '<h1>403 – Acesso negado</h1>';
