@@ -5,14 +5,17 @@ require_once '../db.php';
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { header('Location: index.php'); exit; }
 
-// Aqui fazemos a query para buscar o registo específico com base no ID que vem na query string, 
-// e só selecionamos se a visibilidade for "publico" para garantir que não mostramos registos privados
+// a query agora tem duas condições de visibilidade: ou o registo é público ou pertence ao utilizador atual
+// assim o dono consegue ver os seus registos privados mas qualquer outro utilizador só vê os públicos
+// o COALESCE serve para tratar o caso em que não há sessão ativa e o user_id é null, usando 0 como fallback
+$user_id = $_SESSION['user_id'] ?? 0;
 $stmt = $pdo->prepare(
     "SELECT s.*, u.username FROM spots s
      JOIN users u ON u.id = s.user_id
-     WHERE s.id = ? AND s.visibility = 'publico'"
+     WHERE s.id = ?
+     AND (s.visibility = 'publico' OR s.user_id = ?)"
 );
-$stmt->execute([$id]);
+$stmt->execute([$id, $user_id]);
 $spot = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$spot) { echo "Registo não encontrado."; exit; }
@@ -27,10 +30,15 @@ $metas = $meta_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 <head><meta charset="UTF-8"><title>Registo – SpottedIRL</title></head>
 <body>
     <!-- O link "Voltar" leva de volta à página principal onde estão listados os registos públicos -->
-<a href="../index.php">← Voltar</a>
+<a href="../index.php">&#8592; Voltar</a>
 <!-- Aqui mostramos o título do registo que é a descrição, o username do utilizador que fez o upload e a data de criação -->
 <h1><?= htmlspecialchars($spot['description']) ?></h1>
 <p>Por: <?= htmlspecialchars($spot['username']) ?> | <?= htmlspecialchars($spot['created_at']) ?></p>
+
+<!-- se o registo for privado mostramos uma indicação para o dono saber que só ele o consegue ver -->
+<?php if ($spot['visibility'] === 'privado'): ?>
+    <p style="color:orange"><em>Este registo é privado e só tu o consegues ver.</em></p>
+<?php endif; ?>
 
 <!-- Aqui mostramos o ficheiro do registo, se for foto mostramos a imagem, se for video mostramos o video e se for audio mostramos 
      o audio player -->
@@ -52,8 +60,13 @@ $metas = $meta_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 que são informações adicionais que o utilizador pode escolher preencher ou não no momento do upload 
  Se alguma dessas informações não tiver sido preenchida, mostramos "—" para indicar que não há informação disponível -->
 <h2>Metainfo</h2>
-<p>Localização: <?= htmlspecialchars($metas['localizacao'] ?? '—') ?></p>
-<p>Hora do dia: <?= htmlspecialchars($metas['hora_do_dia'] ?? '—') ?></p>
-<p>Raridade: <?= htmlspecialchars($metas['raridade'] ?? '—') ?></p>
+<p>Localização: <?= htmlspecialchars($metas['localizacao'] ?? '&mdash;') ?></p>
+<p>Hora do dia: <?= htmlspecialchars($metas['hora_do_dia'] ?? '&mdash;') ?></p>
+<p>Raridade: <?= htmlspecialchars($metas['raridade'] ?? '&mdash;') ?></p>
+
+<!-- se o registo pertencer ao utilizador atual mostramos um link direto para editar -->
+<?php if ((int)$spot['user_id'] === (int)($user_id)): ?>
+    <br><a href="simpatizante/edit_spot.php?id=<?= $spot['id'] ?>">Editar este registo</a>
+<?php endif; ?>
 </body>
 </html>

@@ -40,6 +40,14 @@ if (!$user || !password_verify($password, $user['password_hash'])) {
     exit;
 }
 
+// se a conta estiver suspensa pelo admin não deixamos entrar e damos uma mensagem adequada
+// a verificação é feita depois da password para não revelarmos se a conta existe antes de validar as credenciais
+if (!$user['is_active']) {
+    $_SESSION['error'] = 'A tua conta está suspensa. Contacta o administrador.';
+    header('Location: ../views/login.php');
+    exit;
+}
+
 // se chegámos até aqui a autenticação foi bem sucedida e guardamos os dados essenciais do utilizador na sessão
 // são estes valores que o resto da aplicação usa para saber quem está logged in e que permissões tem
 // o auth.php lê o role da sessão para decidir se o utilizador pode aceder a cada página
@@ -59,4 +67,4 @@ switch ($user['role']) {
     default:
         header('Location: ../index.php');
 }
-exit;   
+exit;

@@ -18,6 +18,9 @@ require_role('admin');
 <!-- sem categorias principais o simpatizante não consegue criar subcategorias nem associar registos -->
 <a href="categories.php">Gerir Categorias</a> |
 
+<!-- a gestão de utilizadores permite promover perfis, suspender contas e apagar utilizadores -->
+<a href="users.php">Gerir Utilizadores</a> |
+
 <!-- o logout aponta para o controlador que destrói a sessão e redireciona para o login -->
 <a href="../../controllers/logout.php">Logout</a>
 </body></html>
