@@ -105,6 +105,23 @@ switch ($action) {
         $_SESSION['success'] = 'Utilizador e todos os seus dados apagados.';
         header('Location: ../views/admin/users.php');
         exit;
+        // as ações de aprovação ou rejeição de pedidos de promoção a simpatizante também passam por aqui, 
+        // o admin pode aprovar ou rejeitar cada pedido pendente e o controlador trata de atualizar o perfil do utilizador e o estado do pedido conforme a ação escolhida
+        case 'approve_request':
+            $request_id = (int)($_POST['request_id'] ?? 0);
+            $uid = (int)($_POST['user_id'] ?? 0);
+            $pdo->prepare("UPDATE users SET role = 'simpatizante' WHERE id = ? AND role = 'user'")->execute([$uid]);
+            $pdo->prepare("UPDATE role_requests SET status = 'aprovado' WHERE id = ?")->execute([$request_id]);
+            $_SESSION['success'] = 'Utilizador promovido a simpatizante.';
+            header('Location: ../views/admin/users.php');
+            exit;
+
+        case 'reject_request':
+            $request_id = (int)($_POST['request_id'] ?? 0);
+            $pdo->prepare("UPDATE role_requests SET status = 'rejeitado' WHERE id = ?")->execute([$request_id]);
+            $_SESSION['success'] = 'Pedido rejeitado.';
+            header('Location: ../views/admin/users.php');
+            exit;
 }
 
 // se chegámos aqui é porque o action não era nenhum dos esperados

@@ -34,6 +34,21 @@ $metas = $meta_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 <!-- Aqui mostramos o título do registo que é a descrição, o username do utilizador que fez o upload e a data de criação -->
 <h1><?= htmlspecialchars($spot['description']) ?></h1>
 <p>Por: <?= htmlspecialchars($spot['username']) ?> | <?= htmlspecialchars($spot['created_at']) ?></p>
+<?php
+$is_following = false;
+if (!empty($_SESSION['user_id'])) {
+    $chk = $pdo->prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?");
+    $chk->execute([$_SESSION['user_id'], $spot['user_id']]);
+    $is_following = (bool)$chk->fetchColumn();
+}
+?>
+<?php if (!empty($_SESSION['user_id']) && $_SESSION['user_id'] != $spot['user_id']): ?>
+    <form method="POST" action="../controllers/follow_action.php" style="display:inline">
+        <input type="hidden" name="action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
+        <input type="hidden" name="followed_id" value="<?= $spot['user_id'] ?>">
+        <button type="submit"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
+    </form>
+<?php endif; ?>
 
 <!-- se o registo for privado mostramos uma indicação para o dono saber que só ele o consegue ver -->
 <?php if ($spot['visibility'] === 'privado'): ?>

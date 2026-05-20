@@ -64,6 +64,9 @@ switch ($user['role']) {
     case 'simpatizante':
         header('Location: ../views/simpatizante/dashboard.php');
         break;
+    case 'user':
+        header('Location: ../views/user/dashboard.php');
+        break;
     default:
         header('Location: ../index.php');
 }

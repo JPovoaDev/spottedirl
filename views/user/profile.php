@@ -3,14 +3,14 @@
 // se o perfil estiver privado os seus registos não aparecem para outros simpatizantes na listagem pública
 require_once '../../auth.php';
 require_once '../../db.php';
-require_role('simpatizante');
+require_role('user');
 
 $error   = $_SESSION['error']   ?? null; unset($_SESSION['error']);
 $success = $_SESSION['success'] ?? null; unset($_SESSION['success']);
 
 // apanhamos os dados do utilizador atual para mostrar no perfil e para saber a visibilidade atual
 $stmt = $pdo->prepare(
-    "SELECT username, email, role, profile_visibility, created_at FROM users WHERE id = ?"
+    "SELECT username, email, role, created_at FROM users WHERE id = ?"
 );
 $stmt->execute([$_SESSION['user_id']]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -24,9 +24,6 @@ $contagens = [];
 foreach ($stmt_count->fetchAll(PDO::FETCH_ASSOC) as $row) {
     $contagens[$row['visibility']] = $row['total'];
 }
-$seg = $pdo->prepare("SELECT COUNT(*) FROM follows WHERE followed_id = ?");
-$seg->execute([$_SESSION['user_id']]);
-$num_seguidores = $seg->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -44,30 +41,8 @@ $num_seguidores = $seg->fetchColumn();
 <p><strong>Email:</strong> <?= htmlspecialchars($user['email']) ?></p>
 <p><strong>Perfil:</strong> <?= htmlspecialchars($user['role']) ?></p>
 <p><strong>Membro desde:</strong> <?= htmlspecialchars($user['created_at']) ?></p>
-<p><strong>Registos públicos:</strong> <?= $contagens['publico'] ?? 0 ?></p>
-<p><strong>Registos privados:</strong> <?= $contagens['privado'] ?? 0 ?></p>
-<p><strong>Seguidores:</strong> <?= $num_seguidores ?></p>
 <hr>
 
-<h2>Visibilidade do perfil</h2>
-
-<!-- mostramos o estado atual da visibilidade e um botão para alternar -->
-<!-- se o perfil estiver privado os registos deste utilizador não aparecem para outros simpatizantes -->
-<p>
-    Estado atual:
-    <strong style="color:<?= $user['profile_visibility'] === 'publico' ? 'green' : 'red' ?>">
-        <?= htmlspecialchars($user['profile_visibility']) ?>
-    </strong>
-</p>
-<form method="POST" action="../../controllers/profile_action.php">
-    <input type="hidden" name="action" value="toggle_visibility">
-    <button type="submit">
-        <?= $user['profile_visibility'] === 'publico' ? 'Tornar perfil privado' : 'Tornar perfil público' ?>
-    </button>
-</form>
-
-<br>
-<hr>
 <h2>Pedido de subida de perfil</h2>
 <?php
 // verificamos se já existe um pedido pendente para não criar duplicados

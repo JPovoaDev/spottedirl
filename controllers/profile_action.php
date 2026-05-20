@@ -9,9 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../views/simpatizante/profile.php');
     exit;
 }
-
-// só simpatizantes e acima têm perfil com visibilidade configurável
-require_role('simpatizante');
+// esta página é acessível tanto a utilizadores comuns como a simpatizantes, o que muda é o redirecionamento no final para o perfil certo
+//os utilizadores tem acesso ao perfil de maneira a pedirem promoção a simpatizante
+require_role('user');
 
 $action = $_POST['action'] ?? '';
 
@@ -31,6 +31,32 @@ if ($action === 'toggle_visibility') {
     $pdo->prepare("UPDATE users SET profile_visibility = ? WHERE id = ?")->execute([$nova, $_SESSION['user_id']]);
     $_SESSION['success'] = "Perfil agora definido como $nova.";
 }
+// esta ação é para os simpatizantes pedirem promoção a admin, o que é só um registo na tabela role_requests que o admin depois aprova ou rejeita 
+    if ($action === 'request_promotion') {
+    // verificamos se já há pedido pendente para não criar duplicados
+    $chk = $pdo->prepare("SELECT id FROM role_requests WHERE user_id = ? AND status = 'pendente'");
+    $chk->execute([$_SESSION['user_id']]);
+   // se já existe um pedido pendente mostramos um erro e não criamos outro 
+    if ($chk->fetch()) {
+        $_SESSION['error'] = 'Já tens um pedido pendente.';
+    } else {
+        $pdo->prepare("INSERT INTO role_requests (user_id) VALUES (?)")->execute([$_SESSION['user_id']]);
+        $_SESSION['success'] = 'Pedido enviado ao administrador.';
+    }
 
-header('Location: ../views/simpatizante/profile.php');
+    //redireciona para a página certa consoante o perfil
+    $role = $_SESSION['role'] ?? '';
+    $dest = $role === 'simpatizante'
+        ? '../views/simpatizante/profile.php'
+        : '../views/user/profile.php';
+    header("Location: $dest");
+    exit;
+}
+
+// fallback: redireciona para a página certa
+$role = $_SESSION['role'] ?? '';
+$dest = $role === 'simpatizante'
+    ? '../views/simpatizante/profile.php'
+    : '../views/user/profile.php';
+header("Location: $dest");
 exit;
