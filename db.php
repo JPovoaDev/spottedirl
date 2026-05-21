@@ -1,6 +1,6 @@
 <?php
 // variáveis para localizarmos a base de dados: local, nome e credenciais de acesso
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'spottedirl';
 $user = 'root';
 $pass = '';

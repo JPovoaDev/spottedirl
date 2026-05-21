@@ -1,16 +1,15 @@
 <?php
-// Página de detalhe de um spot para utilizadores com perfil user
-// Visível para públicos por qualquer um; privados só pelo dono
+// Página pública de detalhe de um spot — acessível sem login, mas privados só são visíveis pelo dono
 session_start();
-require_once '../../db.php';
+require_once '../db.php';
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) {
-    header('Location: ../../index.php');
+    header('Location: ../index.php');
     exit;
 }
 
-// verifica visibilidade: publico para todos, privado só para o dono
+// a query verifica visibilidade: publico para todos, privado só para o dono
 $user_id = $_SESSION['user_id'] ?? 0;
 $stmt = $pdo->prepare(
     "SELECT s.*, u.username FROM spots s
@@ -23,7 +22,7 @@ $spot = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$spot) {
     $_SESSION['error'] = 'Registo não encontrado ou acesso negado.';
-    header('Location: dashboard.php');
+    header('Location: ../index.php');
     exit;
 }
 
@@ -52,39 +51,40 @@ $has_deepl = (bool)$cfg_stmt->fetchColumn();
     <title><?= htmlspecialchars($spot['description']) ?> – SpottedIRL</title>
 </head>
 <body>
-<a href="dashboard.php">&#8592; Voltar</a>
+<?php require_once 'header.php'; ?>
+
+<a href="../index.php">&#8592; Voltar</a>
 <h1><?= htmlspecialchars($spot['description']) ?></h1>
 <p>Por: <?= htmlspecialchars($spot['username']) ?> | <?= htmlspecialchars($spot['created_at']) ?></p>
 
-<!-- botão de seguir/deixar de seguir — só para utilizadores logados que não sejam o dono -->
+<?php if ($spot['visibility'] === 'privado'): ?>
+    <p style="color:orange"><em>Este registo é privado e só tu o consegues ver.</em></p>
+<?php endif; ?>
+
 <?php if ($user_id && $user_id != $spot['user_id']): ?>
-    <form method="POST" action="../../controllers/follow_action.php" style="display:inline">
+    <form method="POST" action="../controllers/follow_action.php" style="display:inline">
         <input type="hidden" name="action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
         <input type="hidden" name="followed_id" value="<?= $spot['user_id'] ?>">
         <button type="submit"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
     </form>
 <?php endif; ?>
 
-<?php if ($spot['visibility'] === 'privado'): ?>
-    <p style="color:orange"><em>Este registo é privado e só tu o consegues ver.</em></p>
-<?php endif; ?>
-
 <?php if ($spot['type'] === 'foto'): ?>
-    <img src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>" style="max-width:600px"><br>
+    <img src="../uploads/<?= htmlspecialchars($spot['filename']) ?>" style="max-width:600px"><br>
 <?php elseif ($spot['type'] === 'video'): ?>
     <video controls style="max-width:600px">
-        <source src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
+        <source src="../uploads/<?= htmlspecialchars($spot['filename']) ?>">
     </video><br>
 <?php elseif ($spot['type'] === 'audio'): ?>
     <audio controls>
-        <source src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
+        <source src="../uploads/<?= htmlspecialchars($spot['filename']) ?>">
     </audio><br>
 <?php endif; ?>
 
 <h2>Metainfo</h2>
-<p>Localização: <?= htmlspecialchars($metas['localizacao'] ?? '&mdash;') ?></p>
-<p>Hora do dia: <?= htmlspecialchars($metas['hora_do_dia'] ?? '&mdash;') ?></p>
-<p>Raridade: <?= htmlspecialchars($metas['raridade'] ?? '&mdash;') ?></p>
+<p>Localização: <?= htmlspecialchars($metas['localizacao'] ?? '—') ?></p>
+<p>Hora do dia: <?= htmlspecialchars($metas['hora_do_dia'] ?? '—') ?></p>
+<p>Raridade: <?= htmlspecialchars($metas['raridade'] ?? '—') ?></p>
 
 <?php if ($has_deepl): ?>
 <hr>
@@ -95,7 +95,7 @@ $has_deepl = (bool)$cfg_stmt->fetchColumn();
     <option value="FR">Francês</option>
     <option value="DE">Alemão</option>
 </select>
-<button onclick="translateSpot()">Traduzir</button>
+<button id="btn_translate" onclick="translateSpot()">Traduzir</button>
 <p id="translated_text" style="color:#333;font-style:italic"></p>
 <script>
 function translateSpot() {
@@ -103,7 +103,7 @@ function translateSpot() {
     const lang = document.getElementById('target_lang').value;
     const out  = document.getElementById('translated_text');
     out.textContent = 'A traduzir…';
-    fetch('../../controllers/translate_action.php', {
+    fetch('../controllers/translate_action.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'text=' + encodeURIComponent(text) + '&target_lang=' + encodeURIComponent(lang)
@@ -115,5 +115,10 @@ function translateSpot() {
 </script>
 <?php endif; ?>
 
+<?php if ($user_id && (int)$spot['user_id'] === $user_id): ?>
+    <br><a href="simpatizante/edit_spot.php?id=<?= $spot['id'] ?>">Editar este registo</a>
+<?php endif; ?>
+
+<?php require_once 'footer.php'; ?>
 </body>
 </html>

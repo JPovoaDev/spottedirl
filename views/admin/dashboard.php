@@ -20,6 +20,7 @@ require_role('admin');
 
 <!-- a gestão de utilizadores permite promover perfis, suspender contas e apagar utilizadores -->
 <a href="users.php">Gerir Utilizadores</a> |
+<a href="email_config.php">Config. Email</a> |
 
 <!-- o logout aponta para o controlador que destrói a sessão e redireciona para o login -->
 <a href="../../controllers/logout.php">Logout</a>

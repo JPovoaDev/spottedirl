@@ -35,10 +35,13 @@ function has_role(string $min_role): bool {
 
 // esta é a função principal que usamos nas páginas que são protegidas e tem duas verificações:
 function require_role(string $min_role): void {
-    // primeiro verifica se o utilizador está autenticado (tem pelo menos perfil user) 
-    // e se não então guarda uma mensagem de erro na sessão e manda-o para o login
+    // primeiro verifica se o utilizador está autenticado (tem pelo menos perfil user)
+    // se não estiver, guarda o URL atual para redirecionar após o login e manda-o para o login
     if (!has_role('user')) {
         $_SESSION['error'] = 'Tens de fazer login para aceder a esta página.';
+        // guardamos o URL atual para poder redirecionar o utilizador de volta após o login
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $_SESSION['locationAfterAuth'] = $protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
         header('Location: /views/login.php');
         exit; // o exit para a execução do PHP mesmo após o redirect
     }

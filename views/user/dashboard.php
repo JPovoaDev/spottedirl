@@ -2,7 +2,6 @@
 // tal como no dashboard do admin começamos por verificar as permissões antes de mostrar qualquer coisa
 require_once '../../auth.php';
 require_once '../../db.php';
-require_once '../header.php';
 
 // neste caso o nível mínimo exigido é simpatizante, o perfil logo acima do utilizador comum
 // um utilizador com perfil user que tentasse aceder a esta página receberia um 403
@@ -44,6 +43,11 @@ if (empty($spots)): ?>
         <!-- mostramos o username do criador do registo, o tipo, a data de criação e a descrição -->
     <div style="border:1px solid #ccc; margin-bottom:20px; padding:15px;">
         <strong><?= htmlspecialchars($spot['username']) ?></strong>
+        <?php
+        $chk = $pdo->prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?");
+        $chk->execute([$_SESSION['user_id'], $spot['user_id']]);
+        $is_following = (bool)$chk->fetchColumn();
+        ?>
         <form method="POST" action="../../controllers/follow_action.php" style="display:inline">
             <input type="hidden" name="action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
             <input type="hidden" name="followed_id" value="<?= $spot['user_id'] ?>">
@@ -64,16 +68,10 @@ if (empty($spots)): ?>
             </audio><br>
         <?php endif; ?>
         <?= htmlspecialchars($spot['description']) ?><br>
-        <a href="../spot.php?id=<?= $spot['id'] ?>">Ver detalhe</a>
+        <a href="spot.php?id=<?= $spot['id'] ?>">Ver detalhe</a>
             <!-- se houver um utilizador logado e ele não for o dono do registo, mostramos um botão para seguir 
              ou deixar de seguir o criador do registo -->
-        <?php
-        $chk = $pdo->prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?");
-        $chk->execute([$_SESSION['user_id'], $spot['user_id']]);
-        $is_following = (bool)$chk->fetchColumn();
-        ?>
-        
-    </div>
+        </div>
 <?php endforeach; ?>
 <?php endif; ?>
 </body>

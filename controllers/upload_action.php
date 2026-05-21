@@ -78,6 +78,10 @@ $pdo->prepare("INSERT INTO spot_meta (spot_id, meta_key, meta_value) VALUES (?, 
 $pdo->prepare("INSERT INTO spot_meta (spot_id, meta_key, meta_value) VALUES (?, 'hora_do_dia', ?)")->execute([$spot_id, $hora_do_dia]);
 $pdo->prepare("INSERT INTO spot_meta (spot_id, meta_key, meta_value) VALUES (?, 'raridade', ?)")->execute([$spot_id, $raridade]);
 
+// notificamos os seguidores do uploader e subscritores das categorias do spot
+require_once '../controllers/notify_helper.php';
+notify_new_spot($pdo, $spot_id, $_SESSION['user_id']);
+
 $_SESSION['success'] = 'Registo publicado com sucesso.';
 header('Location: ../views/simpatizante/upload.php');
 exit;

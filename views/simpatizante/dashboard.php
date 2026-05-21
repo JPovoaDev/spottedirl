@@ -2,7 +2,6 @@
 // tal como no dashboard do admin começamos por verificar as permissões antes de mostrar qualquer coisa
 
 require_once '../../auth.php';
-require_once '../header.php';
 require_once '../../db.php';
 
 // neste caso o nível mínimo exigido é simpatizante, o perfil logo acima do utilizador comum
@@ -19,6 +18,7 @@ require_role('simpatizante');
 <!-- é aqui que ele cria as categorias secundárias dentro das categorias principais do admin -->
 <a href="subcategories.php">As minhas subcategorias</a> |
 <a href="upload.php">Novo registo</a> |
+<a href="batch_upload.php">Upload em lote</a> |
 
 <!-- os meus registos mostra todos os spots do utilizador, públicos e privados, com opções de editar e apagar -->
 <a href="my_spots.php">Os meus registos</a> |
@@ -60,13 +60,18 @@ if (empty($spots)): ?>
             <?php else: ?>
              <strong><?= htmlspecialchars($spot['username']) ?></strong>
         <?php endif; ?>
+        <?php
+        $chk = $pdo->prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?");
+        $chk->execute([$_SESSION['user_id'], $spot['user_id']]);
+        $is_following = (bool)$chk->fetchColumn();
+        ?>
         <?php if ($spot['user_id'] !== $_SESSION['user_id']): ?>
-         <form method="POST" action="../../controllers/follow_action.php" style="display:inline">
+        <form method="POST" action="../../controllers/follow_action.php" style="display:inline">
             <input type="hidden" name="action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
             <input type="hidden" name="followed_id" value="<?= $spot['user_id'] ?>">
             <button type="submit"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
-        <?php endif; ?>
-        </form><br>
+        </form>
+        <?php endif; ?><br>
         <strong><?= htmlspecialchars($spot['type']) ?></strong>
         — <?= htmlspecialchars($spot['created_at']) ?><br>
         
@@ -83,15 +88,7 @@ if (empty($spots)): ?>
         <?php endif; ?>
         <?= htmlspecialchars($spot['description']) ?><br>
         <a href="spot.php?id=<?= $spot['id'] ?>">Ver detalhe</a>
-            <!-- se houver um utilizador logado e ele não for o dono do registo, mostramos um botão para seguir 
-             ou deixar de seguir o criador do registo -->
-        <?php
-        $chk = $pdo->prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?");
-        $chk->execute([$_SESSION['user_id'], $spot['user_id']]);
-        $is_following = (bool)$chk->fetchColumn();
-        ?>
-       
-    </div>
+            </div>
 <?php endforeach; ?>
 <?php endif; ?>
 </body>

@@ -59,7 +59,9 @@ $cats = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(P
 <html lang="pt">
 <head><meta charset="UTF-8"><title>Pesquisa – SpottedIRL</title></head>
 <body>
-<?php require_once 'header.php'; ?>
+<?php
+// (header.php não é incluído aqui porque search.php tem a sua própria estrutura HTML completa)
+?>
 <h1>Pesquisa</h1>
 
 <!-- o formulário de pesquisa tem vários campos para o utilizador preencher, e cada campo corresponde a uma condição que pode ser adicionada à query de busca -->
@@ -108,6 +110,39 @@ $cats = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(P
             — <?= htmlspecialchars($spot['type']) ?>
             — <?= htmlspecialchars($spot['created_at']) ?><br>
             <?= htmlspecialchars($spot['description']) ?><br>
+
+            <?php
+            // buscamos as categorias associadas a este spot para mostrar os botões de subscrição
+            $spot_cats = $pdo->prepare(
+                "SELECT c.id, c.name FROM categories c
+                 JOIN spot_categories sc ON sc.category_id = c.id
+                 WHERE sc.spot_id = ?"
+            );
+            $spot_cats->execute([$spot['id']]);
+            $spot_cat_list = $spot_cats->fetchAll(PDO::FETCH_ASSOC);
+            ?>
+
+            <?php if (!empty($spot_cat_list) && !empty($_SESSION['user_id'])): ?>
+                <?php foreach ($spot_cat_list as $sc): ?>
+                    <?php
+                    // verificamos se o utilizador já está subscrito a esta categoria
+                    $is_sub = $pdo->prepare(
+                        "SELECT 1 FROM subscriptions WHERE user_id = ? AND category_id = ?"
+                    );
+                    $is_sub->execute([$_SESSION['user_id'], $sc['id']]);
+                    $subscribed = (bool)$is_sub->fetchColumn();
+                    ?>
+                    <form method="POST" action="../controllers/subscribe_action.php" style="display:inline">
+                        <input type="hidden" name="action" value="<?= $subscribed ? 'unsubscribe' : 'subscribe' ?>">
+                        <input type="hidden" name="category_id" value="<?= $sc['id'] ?>">
+                        <button type="submit">
+                            <?= $subscribed ? '🔕 Cancelar' : '🔔 Subscrever' ?>
+                            <?= htmlspecialchars($sc['name']) ?>
+                        </button>
+                    </form>
+                <?php endforeach; ?>
+            <?php endif; ?>
+
             <a href="spot.php?id=<?= $spot['id'] ?>">Ver detalhe</a>
         </div>
     <?php endforeach; ?>

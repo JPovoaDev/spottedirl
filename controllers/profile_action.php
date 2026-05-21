@@ -30,13 +30,21 @@ if ($action === 'toggle_visibility') {
     $nova = $user['profile_visibility'] === 'publico' ? 'privado' : 'publico';
     $pdo->prepare("UPDATE users SET profile_visibility = ? WHERE id = ?")->execute([$nova, $_SESSION['user_id']]);
     $_SESSION['success'] = "Perfil agora definido como $nova.";
-}
-// esta ação é para os simpatizantes pedirem promoção a admin, o que é só um registo na tabela role_requests que o admin depois aprova ou rejeita 
-    if ($action === 'request_promotion') {
+
+    // redireciona para a página certa consoante o perfil
+    $role = $_SESSION['role'] ?? '';
+    $dest = $role === 'simpatizante'
+        ? '../views/simpatizante/profile.php'
+        : '../views/user/profile.php';
+    header("Location: $dest");
+    exit;
+
+// esta ação é para os utilizadores pedirem promoção a simpatizante
+} elseif ($action === 'request_promotion') {
     // verificamos se já há pedido pendente para não criar duplicados
     $chk = $pdo->prepare("SELECT id FROM role_requests WHERE user_id = ? AND status = 'pendente'");
     $chk->execute([$_SESSION['user_id']]);
-   // se já existe um pedido pendente mostramos um erro e não criamos outro 
+    // se já existe um pedido pendente mostramos um erro e não criamos outro
     if ($chk->fetch()) {
         $_SESSION['error'] = 'Já tens um pedido pendente.';
     } else {
@@ -44,7 +52,7 @@ if ($action === 'toggle_visibility') {
         $_SESSION['success'] = 'Pedido enviado ao administrador.';
     }
 
-    //redireciona para a página certa consoante o perfil
+    // redireciona para a página certa consoante o perfil
     $role = $_SESSION['role'] ?? '';
     $dest = $role === 'simpatizante'
         ? '../views/simpatizante/profile.php'

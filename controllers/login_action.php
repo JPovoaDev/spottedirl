@@ -48,12 +48,28 @@ if (!$user['is_active']) {
     exit;
 }
 
+// se a conta não estiver verificada, não deixamos entrar e mandamos para a página de verificação
+if (!$user['is_verified']) {
+    $_SESSION['pending_user_id'] = $user['id'];
+    $_SESSION['error'] = 'Conta ainda não verificada. Insere o código enviado para o teu email.';
+    header('Location: ../views/verify.php');
+    exit;
+}
+
 // se chegámos até aqui a autenticação foi bem sucedida e guardamos os dados essenciais do utilizador na sessão
 // são estes valores que o resto da aplicação usa para saber quem está logged in e que permissões tem
 // o auth.php lê o role da sessão para decidir se o utilizador pode aceder a cada página
 $_SESSION['user_id'] = $user['id'];
 $_SESSION['username'] = $user['username'];
 $_SESSION['role'] = $user['role'];
+
+// se havia um URL guardado antes do redirect para o login, vamos para lá
+if (!empty($_SESSION['locationAfterAuth'])) {
+    $dest = $_SESSION['locationAfterAuth'];
+    unset($_SESSION['locationAfterAuth']);
+    header("Location: $dest");
+    exit;
+}
 
 // redirecionamos para o dashboard certo consoante o perfil do utilizador, o admin vai para o painel de administração, o simpatizante para o seu painel próprio
 // e qualquer outro perfil como o utilizador comum vai para a página principal

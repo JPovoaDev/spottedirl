@@ -25,7 +25,15 @@ if ($action === 'follow') {
         ->execute([$_SESSION['user_id'], $followed_id]);
 }
 
-// volta para onde veio
-$ref = $_SERVER['HTTP_REFERER'] ?? '../views/search.php';
-header("Location: $ref");
+// valida o referer para evitar open-redirect: só redireciona para URLs do mesmo host
+$ref = $_SERVER['HTTP_REFERER'] ?? '';
+$safe_ref = '../views/search.php';
+if ($ref && filter_var($ref, FILTER_VALIDATE_URL)) {
+    $ref_host = parse_url($ref, PHP_URL_HOST);
+    $own_host = $_SERVER['HTTP_HOST'] ?? '';
+    if ($ref_host === $own_host) {
+        $safe_ref = $ref;
+    }
+}
+header("Location: $safe_ref");
 exit;

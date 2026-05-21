@@ -13,13 +13,13 @@ session_start();
 
     <?php if (!empty($_SESSION['error'])): ?>
         <!-- mostramos o erro a vermelho e apagamos da sessão com o unset para não aparecer outra vez ao dar refresh -->
-        <p style="color:red"><?= $_SESSION['error'] ?></p>
+        <p style="color:red"><?= htmlspecialchars($_SESSION['error']) ?></p>
         <?php unset($_SESSION['error']); ?>
     <?php endif; ?>
 
     <?php if (!empty($_SESSION['success'])): ?>
         <!-- mensagem de sucesso a verde, por exemplo quando vimos do registo de uma conta nova -->
-        <p style="color:green"><?= $_SESSION['success'] ?></p>
+        <p style="color:green"><?= htmlspecialchars($_SESSION['success']) ?></p>
         <?php unset($_SESSION['success']); ?>
     <?php endif; ?>
 

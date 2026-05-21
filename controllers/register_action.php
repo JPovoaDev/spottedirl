@@ -64,9 +64,29 @@ $stmt = $pdo->prepare(
      VALUES (?, ?, ?, \'user\', NOW())'
 );
 $stmt->execute([$username, $email, $hash]);
+$user_id = $pdo->lastInsertId();
 
-// guardamos uma mensagem de sucesso na sessão e mandamos para o login
-// o login.php vai ler esta mensagem da sessão e mostrá-la a verde ao utilizador
-$_SESSION['success'] = 'Conta criada com sucesso. Faz login!';
-header('Location: ../views/login.php');
+// Gerar código de confirmação de 6 dígitos
+$token   = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+$expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+
+$pdo->prepare(
+    "INSERT INTO email_verifications (user_id, token, expires_at)
+     VALUES (?, ?, ?)"
+)->execute([$user_id, $token, $expires]);
+
+// Enviar email com o código
+require_once 'notify_helper.php';
+$subject = "Confirma a tua conta - SpottedIRL";
+$body = "
+    <h2>Bem-vindo ao SpottedIRL!</h2>
+    <p>O teu código de confirmação é:</p>
+    <h1 style='letter-spacing: 8px;'>{$token}</h1>
+    <p>Este código expira em 30 minutos.</p>
+";
+send_email($pdo, $email, $subject, $body);
+
+$_SESSION['pending_user_id'] = $user_id;
+$_SESSION['success'] = 'Conta criada com sucesso. Verifica o teu email para obter o código de ativação!';
+header('Location: ../views/verify.php');
 exit;
