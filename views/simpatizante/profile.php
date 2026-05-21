@@ -68,29 +68,7 @@ $num_seguidores = $seg->fetchColumn();
 
 <br>
 <hr>
-<h2>Pedido de subida de perfil</h2>
-<?php
-// verificamos se já existe um pedido pendente para não criar duplicados
-$req = $pdo->prepare("SELECT id, status FROM role_requests WHERE user_id = ? ORDER BY requested_at DESC LIMIT 1");
-$req->execute([$_SESSION['user_id']]);
-$pedido = $req->fetch(PDO::FETCH_ASSOC);
-?>
-<!-- se o pedido já existe mostramos o estado, se não existe mostramos o botão para criar um novo pedido -->
-<?php if ($pedido && $pedido['status'] === 'pendente'): ?>
-    <p style="color:orange">Pedido pendente — aguarda resposta do administrador.</p>
-<?php elseif ($pedido && $pedido['status'] === 'rejeitado'): ?>
-    <p style="color:red">O teu último pedido foi rejeitado.</p>
-    <form method="POST" action="../../controllers/profile_action.php">
-        <input type="hidden" name="action" value="request_promotion">
-        <button type="submit">Pedir novamente</button>
-    </form>
-<?php else: ?>
-    <!-- se não existe pedido pendente mostramos o botão para criar um novo pedido -->
-    <form method="POST" action="../../controllers/profile_action.php">
-        <input type="hidden" name="action" value="request_promotion">
-        <button type="submit">Pedir subida de perfil</button>
-    </form>
-<?php endif; ?>
+
 <a href="dashboard.php">&#8592; Voltar ao painel</a>
 </body>
 </html>

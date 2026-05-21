@@ -33,11 +33,15 @@ require_role('simpatizante');
 $stmt = $pdo->prepare(
     "SELECT s.*, u.username FROM spots s
      JOIN users u ON u.id = s.user_id
-     WHERE s.visibility = 'publico'
-     AND s.user_id != ?
-     AND u.profile_visibility = 'publico'
-     AND u.role IN ('simpatizante','admin')
-     AND u.is_active = 1
+     WHERE (
+         s.user_id = ?
+         OR (
+             s.visibility = 'publico'
+             AND u.profile_visibility = 'publico'
+             AND u.role IN ('simpatizante','admin')
+             AND u.is_active = 1
+         )
+     )
      ORDER BY s.created_at DESC
      LIMIT 20"
 );
@@ -51,10 +55,21 @@ if (empty($spots)): ?>
     <?php foreach ($spots as $spot): ?>
         <!-- mostramos o username do criador do registo, o tipo, a data de criação e a descrição -->
     <div style="border:1px solid #ccc; margin-bottom:16px; padding:12px;">
-        <strong><?= htmlspecialchars($spot['username']) ?></strong>
-        — <?= htmlspecialchars($spot['type']) ?>
+        <?php if ($spot['user_id'] === $_SESSION['user_id']): ?>
+            <strong><?= htmlspecialchars("Me") ?></strong>
+            <?php else: ?>
+             <strong><?= htmlspecialchars($spot['username']) ?></strong>
+        <?php endif; ?>
+        <?php if ($spot['user_id'] !== $_SESSION['user_id']): ?>
+         <form method="POST" action="../../controllers/follow_action.php" style="display:inline">
+            <input type="hidden" name="action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
+            <input type="hidden" name="followed_id" value="<?= $spot['user_id'] ?>">
+            <button type="submit"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
+        <?php endif; ?>
+        </form><br>
+        <strong><?= htmlspecialchars($spot['type']) ?></strong>
         — <?= htmlspecialchars($spot['created_at']) ?><br>
-        <?= htmlspecialchars($spot['description']) ?><br>
+        
         <?php if ($spot['type'] === 'foto'): ?>
             <img src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>" style="max-width:300px"><br>
         <?php elseif ($spot['type'] === 'video'): ?>
@@ -66,7 +81,8 @@ if (empty($spots)): ?>
                 <source src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
             </audio><br>
         <?php endif; ?>
-        <a href="../spot.php?id=<?= $spot['id'] ?>">Ver detalhe</a>
+        <?= htmlspecialchars($spot['description']) ?><br>
+        <a href="spot.php?id=<?= $spot['id'] ?>">Ver detalhe</a>
             <!-- se houver um utilizador logado e ele não for o dono do registo, mostramos um botão para seguir 
              ou deixar de seguir o criador do registo -->
         <?php
@@ -74,11 +90,7 @@ if (empty($spots)): ?>
         $chk->execute([$_SESSION['user_id'], $spot['user_id']]);
         $is_following = (bool)$chk->fetchColumn();
         ?>
-        <form method="POST" action="../../controllers/follow_action.php" style="display:inline">
-            <input type="hidden" name="action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
-            <input type="hidden" name="followed_id" value="<?= $spot['user_id'] ?>">
-            <button type="submit"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
-        </form>
+       
     </div>
 <?php endforeach; ?>
 <?php endif; ?>
