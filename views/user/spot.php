@@ -1,10 +1,7 @@
 <?php
-// Ficheiro redundante - usar views/spot.php
-header("Location: ../spot.php" . ($_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : ''));
-exit;
-require_once '../auth.php';
+require_once '../../auth.php';
+require_once '../../db.php';
 
-header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['error' => 'Autenticação necessária.']);

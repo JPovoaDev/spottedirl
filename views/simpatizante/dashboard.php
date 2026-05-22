@@ -89,7 +89,7 @@ if (empty($spots)): ?>
         <?php endif; ?>
         <p style="margin-bottom: 15px; font-size: 1.1em;"><?= htmlspecialchars($spot['description']) ?></p>
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <a href="../spot.php?id=<?= $spot['id'] ?>" class="btn">Ver detalhe</a>
+        <a href="spot.php?id=<?= $spot['id'] ?>" class="btn">Ver detalhe</a>
         <?php if ($spot['visibility'] === 'publico'): ?>
         <?php
         $url_spot = 'http://' . $_SERVER['HTTP_HOST'] . '/views/spot.php?id=' . $spot['id'];

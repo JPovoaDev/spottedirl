@@ -1,8 +1,7 @@
 <?php
-// Ficheiro redundante - usar views/spot.php
-header("Location: ../spot.php" . ($_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : ''));
-exit;
 
+require_once '../../auth.php';
+require_once '../../db.php';
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { header('Location: ../../index.php'); exit; }
 
