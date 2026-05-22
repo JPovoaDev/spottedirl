@@ -19,60 +19,58 @@ $stmt = $pdo->prepare(
 );
 $stmt->execute([$_SESSION['user_id']]);
 $spots = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$page_title = 'Os meus registos';
+require_once '../header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <title>Os meus registos – SpottedIRL</title>
-</head>
-<body>
 <h1>Os meus registos</h1>
 
-<?php if ($error):   ?><p style="color:red"><?= htmlspecialchars($error) ?></p><?php endif; ?>
-<?php if ($success): ?><p style="color:green"><?= htmlspecialchars($success) ?></p><?php endif; ?>
+<?php if ($error):   ?><p class="error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
+<?php if ($success): ?><p class="success"><?= htmlspecialchars($success) ?></p><?php endif; ?>
 
 <?php if (empty($spots)): ?>
     <p>Ainda não publicaste nenhum registo. <a href="upload.php">Criar registo</a></p>
 <?php else: ?>
     <?php foreach ($spots as $spot): ?>
-        <div style="border:1px solid #ccc; margin-bottom:16px; padding:12px;">
+        <div class="spot-card">
             <strong><?= htmlspecialchars($spot['type']) ?></strong>
             — <?= htmlspecialchars($spot['created_at']) ?>
             <!-- mostramos a visibilidade a cores para ser mais fácil de identificar registos privados de uma vez -->
             — Visibilidade: <em style="color:<?= $spot['visibility'] === 'publico' ? 'green' : 'red' ?>">
                 <?= htmlspecialchars($spot['visibility']) ?>
             </em><br>
-            <?= htmlspecialchars($spot['description']) ?><br>
+            <p style="margin-bottom: 15px; font-size: 1.1em;"><?= htmlspecialchars($spot['description']) ?></p>
 
             <!-- mostramos o ficheiro consoante o tipo, da mesma maneira que nas outras páginas -->
             <?php if ($spot['type'] === 'foto'): ?>
-                <img src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>" style="max-width:300px"><br>
+                <img src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
             <?php elseif ($spot['type'] === 'video'): ?>
-                <video controls style="max-width:300px">
+                <video controls>
                     <source src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
-                </video><br>
+                </video>
             <?php elseif ($spot['type'] === 'audio'): ?>
                 <audio controls>
                     <source src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
-                </audio><br>
+                </audio>
             <?php endif; ?>
 
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
             <!-- link para a página de edição deste registo específico -->
-            <a href="edit_spot.php?id=<?= $spot['id'] ?>">Editar</a> |
+            <a href="edit_spot.php?id=<?= $spot['id'] ?>" class="btn">Editar</a>
 
             <!-- o confirm evita apagar por engano, e o formulário POST impede que o URL seja chamado diretamente -->
-            <form method="POST" action="../../controllers/spot_action.php" style="display:inline"
+            <form method="POST" action="../../controllers/spot_action.php" style="display:inline; margin: 0;"
                   onsubmit="return confirm('Tens a certeza que queres apagar este registo?')">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="spot_id" value="<?= $spot['id'] ?>">
-                <button type="submit" style="color:red">Apagar</button>
+                <button type="submit" class="btn" style="background-color: #dc3545;">Apagar</button>
             </form>
+            </div>
         </div>
     <?php endforeach; ?>
 <?php endif; ?>
 
-<a href="dashboard.php">&#8592; Voltar ao painel</a> |
-<a href="upload.php">Novo registo</a>
-</body>
-</html>
+<div style="margin-top: 30px; display: flex; gap: 10px;">
+<a href="dashboard.php" class="btn btn-secondary">&#8592; Voltar ao painel</a>
+<a href="upload.php" class="btn">Novo registo</a>
+</div>
+<?php require_once '../footer.php'; ?>

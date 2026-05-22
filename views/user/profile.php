@@ -24,18 +24,13 @@ $contagens = [];
 foreach ($stmt_count->fetchAll(PDO::FETCH_ASSOC) as $row) {
     $contagens[$row['visibility']] = $row['total'];
 }
+$page_title = 'O meu perfil';
+require_once '../header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <title>O meu perfil – SpottedIRL</title>
-</head>
-<body>
 <h1>O meu perfil</h1>
 
-<?php if ($error):   ?><p style="color:red"><?= htmlspecialchars($error) ?></p><?php endif; ?>
-<?php if ($success): ?><p style="color:green"><?= htmlspecialchars($success) ?></p><?php endif; ?>
+<?php if ($error):   ?><p class="error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
+<?php if ($success): ?><p class="success"><?= htmlspecialchars($success) ?></p><?php endif; ?>
 
 <p><strong>Username:</strong> <?= htmlspecialchars($user['username']) ?></p>
 <p><strong>Email:</strong> <?= htmlspecialchars($user['email']) ?></p>
@@ -57,15 +52,18 @@ $pedido = $req->fetch(PDO::FETCH_ASSOC);
     <p style="color:red">O teu último pedido foi rejeitado.</p>
     <form method="POST" action="../../controllers/profile_action.php">
         <input type="hidden" name="action" value="request_promotion">
-        <button type="submit">Pedir novamente</button>
+        <button type="submit" class="btn">Pedir novamente</button>
     </form>
 <?php else: ?>
     <!-- se não existe pedido pendente mostramos o botão para criar um novo pedido -->
     <form method="POST" action="../../controllers/profile_action.php">
         <input type="hidden" name="action" value="request_promotion">
-        <button type="submit">Pedir subida de perfil</button>
+        <button type="submit" class="btn">Pedir subida de perfil</button>
     </form>
 <?php endif; ?>
-<a href="dashboard.php">&#8592; Voltar ao painel</a>
-</body>
-</html>
+
+<div style="margin-top: 30px;">
+<a href="dashboard.php" class="btn btn-secondary">&#8592; Voltar ao painel</a>
+</div>
+
+<?php require_once '../footer.php'; ?>

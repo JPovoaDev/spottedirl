@@ -58,9 +58,9 @@ function notify_new_spot(PDO $pdo, int $spot_id, int $uploader_id): void {
     // ADICIONAR ISTO
     try {
         $followers = $pdo->prepare(
-            "SELECT u.email FROM user_follows f
-            JOIN users u ON u.id = f.user_id
-            WHERE f.simpatizante_id = ? AND u.is_active = 1"
+            "SELECT u.email FROM follows f
+            JOIN users u ON u.id = f.follower_id
+            WHERE f.followed_id = ? AND u.is_active = 1"
         );
         $followers->execute([$uploader_id]);
         $rows = $followers->fetchAll(PDO::FETCH_ASSOC);

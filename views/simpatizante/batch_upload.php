@@ -7,21 +7,19 @@ require_role('simpatizante');
 $error   = $_SESSION['error']         ?? null; unset($_SESSION['error']);
 $success = $_SESSION['batch_success'] ?? null; unset($_SESSION['batch_success']);
 $errors  = $_SESSION['batch_errors']  ?? [];   unset($_SESSION['batch_errors']);
+$page_title = 'Upload em Lote';
+require_once '../header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head><meta charset="UTF-8"><title>Upload em Lote – SpottedIRL</title></head>
-<body>
 <h1>Upload em Lote (ZIP + XML)</h1>
 
-<?php if ($error): ?><p style="color:red"><?= htmlspecialchars($error) ?></p><?php endif; ?>
+<?php if ($error): ?><p class="error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 
 <?php if ($success !== null): ?>
-    <p style="color:green"><?= (int)$success ?> registo(s) importado(s) com sucesso.</p>
+    <p class="success"><?= (int)$success ?> registo(s) importado(s) com sucesso.</p>
 <?php endif; ?>
 
 <?php if (!empty($errors)): ?>
-    <h3 style="color:red">Erros encontrados:</h3>
+    <h3 class="error">Erros encontrados:</h3>
     <ul>
         <?php foreach ($errors as $e): ?>
             <li><?= htmlspecialchars($e) ?></li>
@@ -47,12 +45,13 @@ $errors  = $_SESSION['batch_errors']  ?? [];   unset($_SESSION['batch_errors']);
 </pre>
 
 <form method="POST" action="../../controllers/batch_upload_action.php" enctype="multipart/form-data">
-    <label>Ficheiro ZIP:<br>
+    <label>Ficheiro ZIP:
         <input type="file" name="zip_file" accept=".zip" required>
-    </label><br><br>
-    <button type="submit">Importar</button>
+    </label>
+    <button type="submit" class="btn">Importar</button>
 </form>
 
-<a href="dashboard.php">&#8592; Voltar ao painel</a>
-</body>
-</html>
+<div style="margin-top: 20px;">
+<a href="dashboard.php" class="btn btn-secondary">&#8592; Voltar ao painel</a>
+</div>
+<?php require_once '../footer.php'; ?>

@@ -31,20 +31,40 @@ $lang_map = [
     'DE' => 'de',
     'IT' => 'it',
 ];
-$target_code = $lang_map[$target] ?? 'en';
+$target_code = $lang_map[$target] ?? 'EN';
 
-$url = 'https://api.mymemory.translated.net/get?q=' . urlencode($text) . '&langpair=pt|' . $target_code;
+$stmt = $pdo->prepare("SELECT config_value FROM system_config WHERE config_key = 'deepl_api_key'");
+$stmt->execute();
+$deepl_key = $stmt->fetchColumn();
+
+if (!$deepl_key) {
+    echo json_encode(['error' => 'Chave DeepL não configurada.']);
+    exit;
+}
+
+$url = str_ends_with($deepl_key, ':fx') 
+    ? 'https://api-free.deepl.com/v2/translate' 
+    : 'https://api.deepl.com/v2/translate';
 
 $ch = curl_init($url);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT        => 10,
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => http_build_query([
+        'text' => $text,
+        'target_lang' => $target_code
+    ]),
+    CURLOPT_HTTPHEADER => [
+        'Authorization: DeepL-Auth-Key ' . $deepl_key,
+        'Content-Type: application/x-www-form-urlencoded'
+    ],
+    CURLOPT_TIMEOUT => 10,
 ]);
 $res  = curl_exec($ch);
 curl_close($ch);
 
 $data       = json_decode($res, true);
-$translated = $data['responseData']['translatedText'] ?? null;
+$translated = $data['translations'][0]['text'] ?? null;
 
 if (!$translated) {
     echo json_encode(['error' => 'Erro na tradução.']);

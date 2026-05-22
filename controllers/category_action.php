@@ -86,6 +86,9 @@ if (in_array($action, ['create', 'update', 'delete'])) {
                 exit;
             }
 
+            // apagamos primeiro as referencias em spot_categories para não dar erro
+            $pdo->prepare("DELETE FROM spot_categories WHERE category_id = ? OR category_id IN (SELECT id FROM categories WHERE parent_id = ?)")->execute([$id, $id]);
+
             // apagamos primeiro as subcategorias filhas e só depois a categoria principal
             // porque a base de dados tem uma foreign key de parent_id que impede de apagar uma categoria
             // que ainda tenha filhas o que faz com que a ordem das queries importe

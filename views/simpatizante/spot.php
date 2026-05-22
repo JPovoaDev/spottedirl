@@ -1,7 +1,7 @@
 <?php
-// Página de detalhe de um spot — visível pelo dono (privado ou público) e por qualquer utilizador (público)
-session_start();
-require_once '../../db.php';
+// Ficheiro redundante - usar views/spot.php
+header("Location: ../spot.php" . ($_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : ''));
+exit;
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { header('Location: ../../index.php'); exit; }
@@ -33,16 +33,16 @@ $metas = $meta_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 $cfg_stmt = $pdo->prepare("SELECT config_value FROM system_config WHERE config_key = 'deepl_api_key'");
 $cfg_stmt->execute();
 $has_deepl = (bool)$cfg_stmt->fetchColumn();
+$page_title = 'Registo';
+require_once '../header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head><meta charset="UTF-8"><title>Registo – SpottedIRL</title></head>
-<body>
-    <!-- O link "Voltar" leva de volta ao painel do simpatizante -->
-<a href="dashboard.php">&#8592; Voltar</a>
+<!-- O link "Voltar" leva de volta ao painel do simpatizante -->
+<a href="dashboard.php" class="btn btn-secondary" style="margin-bottom: 20px;">&#8592; Voltar</a>
+
+<div class="spot-detail">
 <!-- Aqui mostramos o título do registo que é a descrição, o username do utilizador que fez o upload e a data de criação -->
 <h1><?= htmlspecialchars($spot['description']) ?></h1>
-<p>Por: <?= htmlspecialchars($spot['username']) ?> | <?= htmlspecialchars($spot['created_at']) ?></p>
+<p>Por: <strong><?= htmlspecialchars($spot['username']) ?></strong> | <?= htmlspecialchars($spot['created_at']) ?></p>
 
 <?php
 // se houver um utilizador logado e ele não for o dono do registo, mostramos um botão para seguir ou deixar de seguir o criador do registo
@@ -58,7 +58,7 @@ if (!empty($_SESSION['user_id'])) {
     <form method="POST" action="../../controllers/follow_action.php" style="display:inline">
         <input type="hidden" name="action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
         <input type="hidden" name="followed_id" value="<?= $spot['user_id'] ?>">
-        <button type="submit"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
+        <button type="submit" class="btn"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
     </form>
 <?php endif; ?>
 
@@ -69,15 +69,15 @@ if (!empty($_SESSION['user_id'])) {
 
 <!-- Aqui mostramos o ficheiro do registo, se for foto mostramos a imagem, se for video mostramos o video e se for audio mostramos o audio player -->
 <?php if ($spot['type'] === 'foto'): ?>
-    <img src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>" style="max-width:600px"><br>
+    <img src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
 <?php elseif ($spot['type'] === 'video'): ?>
-    <video controls style="max-width:600px">
+    <video controls>
         <source src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
-    </video><br>
+    </video>
 <?php elseif ($spot['type'] === 'audio'): ?>
     <audio controls>
         <source src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
-    </audio><br>
+    </audio>
 <?php endif; ?>
 
 <!-- Aqui mostramos a metainformação do registo -->
@@ -96,8 +96,8 @@ if (!empty($_SESSION['user_id'])) {
     <option value="FR">Francês</option>
     <option value="DE">Alemão</option>
 </select>
-<button onclick="translateSpot()">Traduzir</button>
-<p id="translated_text" style="color:#333;font-style:italic"></p>
+<button class="btn" onclick="translateSpot()">Traduzir</button>
+<p id="translated_text" style="color:#333;font-style:italic;margin-top:10px;"></p>
 <script>
 function translateSpot() {
     const text = <?= json_encode($spot['description']) ?>;
@@ -117,8 +117,9 @@ function translateSpot() {
 
 
 <!-- se o registo pertencer ao utilizador atual mostramos um link direto para editar -->
+<div style="display: flex; gap: 10px; align-items: center; margin-top: 20px; flex-wrap: wrap;">
 <?php if ((int)$spot['user_id'] === (int)$user_id): ?>
-    <br><a href="edit_spot.php?id=<?= $spot['id'] ?>">Editar este registo</a>
+    <a href="edit_spot.php?id=<?= $spot['id'] ?>" class="btn">Editar este registo</a>
 <?php endif; ?>
 <?php if ($spot['visibility'] === 'publico'): ?>
 <?php
@@ -126,9 +127,10 @@ $url_spot = 'http://' . $_SERVER['HTTP_HOST'] . '/views/simpatizante/spot.php?id
 $texto    = urlencode($spot['description']);
 $url_enc  = urlencode($url_spot);
 ?>
-| <a href="https://www.facebook.com/sharer/sharer.php?u=<?= $url_enc ?>" target="_blank">Facebook</a>
-| <a href="https://twitter.com/intent/tweet?text=<?= $texto ?>&url=<?= $url_enc ?>" target="_blank">Twitter</a>
+<a href="https://www.facebook.com/sharer/sharer.php?u=<?= $url_enc ?>" target="_blank" class="btn btn-secondary">Facebook</a>
+<a href="https://twitter.com/intent/tweet?text=<?= $texto ?>&url=<?= $url_enc ?>" target="_blank" class="btn btn-secondary">Twitter</a>
 <?php endif; ?>
-</body>
+</div>
+</div>
 
-</html>
+<?php require_once '../footer.php'; ?>

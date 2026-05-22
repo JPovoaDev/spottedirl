@@ -37,19 +37,14 @@ $stmt = $pdo->prepare(
 );
 $stmt->execute([$_SESSION['user_id']]);
 $mysubs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$page_title = 'Subcategorias';
+require_once '../header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <title>Subcategorias – SpottedIRL</title>
-</head>
-<body>
 <h1>As minhas subcategorias</h1>
 
-<?php if ($error):   ?><p style="color:red"><?= htmlspecialchars($error) ?></p><?php endif; ?>
-<?php if ($success): ?><p style="color:green"><?= htmlspecialchars($success) ?></p><?php endif; ?>
+<?php if ($error):   ?><p class="error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
+<?php if ($success): ?><p class="success"><?= htmlspecialchars($success) ?></p><?php endif; ?>
 
 <h2>Criar nova subcategoria</h2>
 <?php if (empty($principals)): ?>
@@ -75,7 +70,7 @@ $mysubs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </select>
         </label>
         <label>Nome da subcategoria: <input type="text" name="name" required></label>
-        <button type="submit">Criar</button>
+        <button type="submit" class="btn">Criar</button>
     </form>
 <?php endif; ?>
 
@@ -102,6 +97,8 @@ $mysubs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </table>
 <?php endif; ?>
 
-<a href="dashboard.php">← Voltar ao painel</a>
-</body>
-</html>
+<div style="margin-top: 20px;">
+<a href="dashboard.php" class="btn btn-secondary">← Voltar ao painel</a>
+</div>
+
+<?php require_once '../footer.php'; ?>

@@ -79,6 +79,15 @@ switch ($action) {
     case 'delete':
         // apagamos a metainfo e as categorias associadas antes de apagar o registo em si
         // pela mesma razão do user_action.php, as foreign keys obrigam a limpar primeiro as tabelas filhas
+        $stmtFile = $pdo->prepare("SELECT filename FROM spots WHERE id = ?");
+        $stmtFile->execute([$spot_id]);
+        $file = $stmtFile->fetchColumn();
+        if ($file) {
+            $path = '../uploads/' . $file;
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
         $pdo->prepare("DELETE FROM spot_meta WHERE spot_id = ?")->execute([$spot_id]);
         $pdo->prepare("DELETE FROM spot_categories WHERE spot_id = ?")->execute([$spot_id]);
         $pdo->prepare("DELETE FROM spots WHERE id = ?")->execute([$spot_id]);

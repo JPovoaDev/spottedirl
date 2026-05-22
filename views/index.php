@@ -21,7 +21,7 @@ $spots = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php else: ?>
 <!-- Mostra o username o tipo a hora e a desricao vindas do spot qeu a query retirou-->
     <?php foreach ($spots as $spot): ?>
-    <div style="border:1px solid #ccc; margin-bottom:20px; padding:15px;">
+    <div class="spot-card">
         <strong><?= htmlspecialchars($spot['username']) ?></strong><br>
         <strong><?= htmlspecialchars($spot['type']) ?></strong>
         — <?= htmlspecialchars($spot['created_at']) ?><br>
@@ -29,20 +29,22 @@ $spots = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- Aqui mostramos o ficheiro do registo, se for foto mostramos a imagem, se for video mostramos o video e se for audio mostramos 
         o audio player -->
         <?php if ($spot['type'] === 'foto'): ?>
-            <img src="uploads/<?= htmlspecialchars($spot['filename']) ?>" style="max-width:400px"><br>
+            <img src="uploads/<?= htmlspecialchars($spot['filename']) ?>">
         <?php elseif ($spot['type'] === 'video'): ?>
-            <video controls style="max-width:400px">
+            <video controls>
                 <source src="uploads/<?= htmlspecialchars($spot['filename']) ?>">
-            </video><br>
+            </video>
         <?php elseif ($spot['type'] === 'audio'): ?>
             <audio controls>
                 <source src="uploads/<?= htmlspecialchars($spot['filename']) ?>">
-            </audio><br>
+            </audio>
         <?php endif; ?>
         <!-- O link "Ver detalhe" leva à página spot.php onde mostramos toda a informação detalhada do registo, 
         como a localização, a hora do dia e a raridade, que são metainformações que guardamos numa tabela separada chamada spot_meta -->
-        <?= htmlspecialchars($spot['description']) ?><br>
-        <a href="views/spot.php?id=<?= $spot['id'] ?>">Ver detalhe</a>
+        <p style="margin-bottom: 15px; font-size: 1.1em;"><?= htmlspecialchars($spot['description']) ?></p>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <a href="views/spot.php?id=<?= $spot['id'] ?>" class="btn">Ver detalhe</a>
+        </div>
     </div>
     <?php endforeach; ?>
 <?php endif; ?>

@@ -100,6 +100,7 @@ switch ($action) {
 
         $pdo->prepare("DELETE FROM spots WHERE user_id = ?")->execute([$user_id]);
         $pdo->prepare("DELETE FROM categories WHERE created_by = ?")->execute([$user_id]);
+        $pdo->prepare("DELETE FROM role_requests WHERE user_id = ?")->execute([$user_id]);
         $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$user_id]);
 
         $_SESSION['success'] = 'Utilizador e todos os seus dados apagados.';

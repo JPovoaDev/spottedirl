@@ -11,7 +11,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>SpottedIRL</title>
+    <title><?= isset($page_title) ? htmlspecialchars($page_title) . ' – SpottedIRL' : 'SpottedIRL' ?></title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -19,16 +19,23 @@ if (session_status() === PHP_SESSION_NONE) {
     <a href="/index.php">SpottedIRL</a>
     <a href="/views/search.php">Pesquisa</a>
     <?php if (!empty($_SESSION['username'])): ?>
-        <!-- se o utilizador estiver logged in mostramos o seu nome e o link de logout -->
-        <!-- o htmlspecialchars protege contra XSS, ou seja se alguém tiver metido HTML no nome da categoria -->
-        <!-- ele converte caracteres como < e > para as versões seguras &lt; e &gt; -->
-        <!-- e assim o browser não interpreta o conteúdo como código HTML mas mostra-o como texto simples -->
-        <span>Olá, <?= htmlspecialchars($_SESSION['username']) ?></span> |
+        <?php
+        // construímos o link do painel com base na role do utilizador
+        $dashboard_url = match($_SESSION['role'] ?? '') {
+            'admin'       => '/views/admin/dashboard.php',
+            'simpatizante'=> '/views/simpatizante/dashboard.php',
+            'user'        => '/views/user/dashboard.php',
+            default       => '/index.php',
+        };
+        ?>
+        <a href="<?= $dashboard_url ?>">Painel</a>
+        <span>Olá, <?= htmlspecialchars($_SESSION['username']) ?></span>
         <a href="/controllers/logout.php">Logout</a>
-        
+
     <?php else: ?>
         <!-- se não estiver logged in então mostramos os links de login e registo -->
-        <a href="/views/login.php">Login</a> |
+        <a href="/views/login.php">Login</a>
         <a href="/views/register.php">Registar</a>
     <?php endif; ?>
 </nav>
+<main class="container">

@@ -49,7 +49,8 @@ if (!$user['is_active']) {
 }
 
 // se a conta não estiver verificada, não deixamos entrar e mandamos para a página de verificação
-if (!$user['is_verified']) {
+// exceto se for admin — o admin é criado diretamente na BD e não passa pelo fluxo de registo com email
+if (!$user['is_verified'] && $user['role'] !== 'admin') {
     $_SESSION['pending_user_id'] = $user['id'];
     $_SESSION['error'] = 'Conta ainda não verificada. Insere o código enviado para o teu email.';
     header('Location: ../views/verify.php');

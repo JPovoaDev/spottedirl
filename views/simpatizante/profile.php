@@ -27,18 +27,13 @@ foreach ($stmt_count->fetchAll(PDO::FETCH_ASSOC) as $row) {
 $seg = $pdo->prepare("SELECT COUNT(*) FROM follows WHERE followed_id = ?");
 $seg->execute([$_SESSION['user_id']]);
 $num_seguidores = $seg->fetchColumn();
+$page_title = 'O meu perfil';
+require_once '../header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <title>O meu perfil – SpottedIRL</title>
-</head>
-<body>
 <h1>O meu perfil</h1>
 
-<?php if ($error):   ?><p style="color:red"><?= htmlspecialchars($error) ?></p><?php endif; ?>
-<?php if ($success): ?><p style="color:green"><?= htmlspecialchars($success) ?></p><?php endif; ?>
+<?php if ($error):   ?><p class="error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
+<?php if ($success): ?><p class="success"><?= htmlspecialchars($success) ?></p><?php endif; ?>
 
 <p><strong>Username:</strong> <?= htmlspecialchars($user['username']) ?></p>
 <p><strong>Email:</strong> <?= htmlspecialchars($user['email']) ?></p>
@@ -61,7 +56,7 @@ $num_seguidores = $seg->fetchColumn();
 </p>
 <form method="POST" action="../../controllers/profile_action.php">
     <input type="hidden" name="action" value="toggle_visibility">
-    <button type="submit">
+    <button type="submit" class="btn">
         <?= $user['profile_visibility'] === 'publico' ? 'Tornar perfil privado' : 'Tornar perfil público' ?>
     </button>
 </form>
@@ -69,6 +64,7 @@ $num_seguidores = $seg->fetchColumn();
 <br>
 <hr>
 
-<a href="dashboard.php">&#8592; Voltar ao painel</a>
-</body>
-</html>
+<div style="margin-top: 30px;">
+<a href="dashboard.php" class="btn btn-secondary">&#8592; Voltar ao painel</a>
+</div>
+<?php require_once '../footer.php'; ?>

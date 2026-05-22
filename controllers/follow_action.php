@@ -18,22 +18,11 @@ if (!$followed_id || $followed_id === (int)$_SESSION['user_id']) {
 }
 
 if ($action === 'follow') {
-    $pdo->prepare("INSERT IGNORE INTO user_follows (user_id, simpatizante_id) VALUES (?, ?)")
+    $pdo->prepare("INSERT IGNORE INTO follows (follower_id, followed_id) VALUES (?, ?)")
         ->execute([$_SESSION['user_id'], $followed_id]);
 } elseif ($action === 'unfollow') {
-    $pdo->prepare("DELETE FROM user_follows WHERE user_id = ? AND simpatizante_id = ?")
+    $pdo->prepare("DELETE FROM follows WHERE follower_id = ? AND followed_id = ?")
         ->execute([$_SESSION['user_id'], $followed_id]);
 }
 
-// valida o referer para evitar open-redirect: só redireciona para URLs do mesmo host
-$ref = $_SERVER['HTTP_REFERER'] ?? '';
-$safe_ref = '../views/search.php';
-if ($ref && filter_var($ref, FILTER_VALIDATE_URL)) {
-    $ref_host = parse_url($ref, PHP_URL_HOST);
-    $own_host = $_SERVER['HTTP_HOST'] ?? '';
-    if ($ref_host === $own_host) {
-        $safe_ref = $ref;
-    }
-}
-header("Location: $safe_ref");
-exit;
+safe_redirect('../views/search.php');

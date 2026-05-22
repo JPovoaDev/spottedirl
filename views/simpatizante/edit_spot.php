@@ -27,30 +27,25 @@ $meta_stmt->execute([$id]);
 $metas = $meta_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
 $error = $_SESSION['error'] ?? null; unset($_SESSION['error']);
+$page_title = 'Editar Registo';
+require_once '../header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <title>Editar Registo – SpottedIRL</title>
-</head>
-<body>
 <h1>Editar Registo</h1>
 
-<?php if ($error): ?><p style="color:red"><?= htmlspecialchars($error) ?></p><?php endif; ?>
+<?php if ($error): ?><p class="error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
 
 <form method="POST" action="../../controllers/spot_action.php">
     <input type="hidden" name="action" value="edit">
     <input type="hidden" name="spot_id" value="<?= $spot['id'] ?>">
 
-    <label>Descrição:<br>
+    <label>Descrição:
         <!-- preenchemos o textarea com a descrição atual para o utilizador não ter de a reescrever -->
-        <textarea name="descricao" required><?= htmlspecialchars($spot['description']) ?></textarea>
-    </label><br><br>
+        <textarea name="descricao" rows="4" required><?= htmlspecialchars($spot['description']) ?></textarea>
+    </label>
 
     <label>Localização:
         <input type="text" name="localizacao" value="<?= htmlspecialchars($metas['localizacao'] ?? '') ?>">
-    </label><br><br>
+    </label>
 
     <label>Raridade:
         <select name="raridade">
@@ -61,18 +56,19 @@ $error = $_SESSION['error'] ?? null; unset($_SESSION['error']);
                 </option>
             <?php endforeach; ?>
         </select>
-    </label><br><br>
+    </label>
 
     <label>Visibilidade:
         <select name="visibilidade">
             <option value="publico"  <?= $spot['visibility'] === 'publico'  ? 'selected' : '' ?>>Público</option>
             <option value="privado"  <?= $spot['visibility'] === 'privado'  ? 'selected' : '' ?>>Privado</option>
         </select>
-    </label><br><br>
+    </label>
 
-    <button type="submit">Guardar alterações</button>
+    <button type="submit" class="btn">Guardar alterações</button>
 </form>
 
-<a href="my_spots.php">&#8592; Voltar aos meus registos</a>
-</body>
-</html>
+<div style="margin-top: 20px;">
+<a href="my_spots.php" class="btn btn-secondary">&#8592; Voltar aos meus registos</a>
+</div>
+<?php require_once '../footer.php'; ?>

@@ -1,8 +1,7 @@
 <?php
-// Página de detalhe de um spot para utilizadores com perfil user
-// Visível para públicos por qualquer um; privados só pelo dono
-session_start();
-require_once '../db.php';
+// Ficheiro redundante - usar views/spot.php
+header("Location: ../spot.php" . ($_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : ''));
+exit;
 require_once '../auth.php';
 
 header('Content-Type: application/json');
@@ -52,24 +51,21 @@ if ($user_id && $user_id != $spot['user_id']) {
 $cfg_stmt = $pdo->prepare("SELECT config_value FROM system_config WHERE config_key = 'deepl_api_key'");
 $cfg_stmt->execute();
 $has_deepl = (bool)$cfg_stmt->fetchColumn();
+$page_title = $spot['description'];
+require_once '../header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <title><?= htmlspecialchars($spot['description']) ?> – SpottedIRL</title>
-</head>
-<body>
-<a href="dashboard.php">&#8592; Voltar</a>
-<h1><?= htmlspecialchars($spot['description']) ?></h1>
-<p>Por: <?= htmlspecialchars($spot['username']) ?> | <?= htmlspecialchars($spot['created_at']) ?></p>
+<a href="dashboard.php" class="btn btn-secondary" style="margin-bottom: 20px;">&#8592; Voltar</a>
+
+<div class="spot-detail">
+    <h1><?= htmlspecialchars($spot['description']) ?></h1>
+    <p>Por: <strong><?= htmlspecialchars($spot['username']) ?></strong> | <?= htmlspecialchars($spot['created_at']) ?></p>
 
 <!-- botão de seguir/deixar de seguir — só para utilizadores logados que não sejam o dono -->
 <?php if ($user_id && $user_id != $spot['user_id']): ?>
     <form method="POST" action="../../controllers/follow_action.php" style="display:inline">
         <input type="hidden" name="action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
         <input type="hidden" name="followed_id" value="<?= $spot['user_id'] ?>">
-        <button type="submit"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
+        <button type="submit" class="btn"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
     </form>
 <?php endif; ?>
 
@@ -78,15 +74,15 @@ $has_deepl = (bool)$cfg_stmt->fetchColumn();
 <?php endif; ?>
 
 <?php if ($spot['type'] === 'foto'): ?>
-    <img src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>" style="max-width:600px"><br>
+    <img src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
 <?php elseif ($spot['type'] === 'video'): ?>
-    <video controls style="max-width:600px">
+    <video controls>
         <source src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
-    </video><br>
+    </video>
 <?php elseif ($spot['type'] === 'audio'): ?>
     <audio controls>
         <source src="../../uploads/<?= htmlspecialchars($spot['filename']) ?>">
-    </audio><br>
+    </audio>
 <?php endif; ?>
 
 <h2>Metainfo</h2>
@@ -104,8 +100,8 @@ $has_deepl = (bool)$cfg_stmt->fetchColumn();
     <option value="FR">Francês</option>
     <option value="DE">Alemão</option>
 </select>
-<button onclick="translateSpot()">Traduzir</button>
-<p id="translated_text" style="color:#333;font-style:italic"></p>
+<button class="btn" onclick="translateSpot()">Traduzir</button>
+<p id="translated_text" style="color:#333;font-style:italic;margin-top:10px;"></p>
 <script>
 function translateSpot() {
     const text = <?= json_encode($spot['description']) ?>;
@@ -129,9 +125,11 @@ $url_spot = 'http://' . $_SERVER['HTTP_HOST'] . '/views/simpatizante/spot.php?id
 $texto    = urlencode($spot['description']);
 $url_enc  = urlencode($url_spot);
 ?>
-| <a href="https://www.facebook.com/sharer/sharer.php?u=<?= $url_enc ?>" target="_blank">Facebook</a>
-| <a href="https://twitter.com/intent/tweet?text=<?= $texto ?>&url=<?= $url_enc ?>" target="_blank">Twitter</a>
+<div style="display: flex; gap: 10px; align-items: center; margin-top: 20px; flex-wrap: wrap;">
+<a href="https://www.facebook.com/sharer/sharer.php?u=<?= $url_enc ?>" target="_blank" class="btn btn-secondary">Facebook</a>
+<a href="https://twitter.com/intent/tweet?text=<?= $texto ?>&url=<?= $url_enc ?>" target="_blank" class="btn btn-secondary">Twitter</a>
+</div>
 <?php endif; ?>
+</div>
 
-</body>
-</html>
+<?php require_once '../footer.php'; ?>

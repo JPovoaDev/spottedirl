@@ -54,13 +54,8 @@ $spots = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // para mostrar as opções de categoria no formulário de pesquisa, precisamos buscar a lista de categorias da base de dados
 $cats = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
-?>
-<!DOCTYPE html>
-<html lang="pt">
-<head><meta charset="UTF-8"><title>Pesquisa – SpottedIRL</title></head>
-<body>
-<?php
-// (header.php não é incluído aqui porque search.php tem a sua própria estrutura HTML completa)
+$page_title = 'Pesquisa';
+require_once 'header.php';
 ?>
 <h1>Pesquisa</h1>
 
@@ -93,7 +88,7 @@ $cats = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(P
         <option value="excecional" <?= ($_GET['raridade'] ?? '') === 'excecional' ? 'selected' : '' ?>>Excecional</option>
     </select>
 
-    <button type="submit">Pesquisar</button>
+    <button type="submit" class="btn">Pesquisar</button>
 </form>
 
 <!-- depois do formulário, mostramos os resultados da pesquisa, indicando quantos foram encontrados -->
@@ -105,7 +100,7 @@ $cats = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(P
     <!-- para cada registo encontrado, mostramos um resumo com o username do criador, o tipo de registo, a data de criação e a descrição, 
      e um link para ver o detalhe do registo -->
     <?php foreach ($spots as $spot): ?>
-        <div style="border:1px solid #ccc; margin:10px; padding:10px">
+        <div class="spot-card">
             <strong><?= htmlspecialchars($spot['username']) ?></strong>
             — <?= htmlspecialchars($spot['type']) ?>
             — <?= htmlspecialchars($spot['created_at']) ?><br>
@@ -135,19 +130,17 @@ $cats = $pdo->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(P
                     <form method="POST" action="../controllers/subscribe_action.php" style="display:inline">
                         <input type="hidden" name="action" value="<?= $subscribed ? 'unsubscribe' : 'subscribe' ?>">
                         <input type="hidden" name="category_id" value="<?= $sc['id'] ?>">
-                        <button type="submit">
+                        <button type="submit" class="btn btn-secondary">
                             <?= $subscribed ? '🔕 Cancelar' : '🔔 Subscrever' ?>
                             <?= htmlspecialchars($sc['name']) ?>
                         </button>
                     </form>
                 <?php endforeach; ?>
             <?php endif; ?>
-
-            <a href="spot.php?id=<?= $spot['id'] ?>">Ver detalhe</a>
+            </div>
+            <a href="spot.php?id=<?= $spot['id'] ?>" class="btn">Ver detalhe</a>
         </div>
     <?php endforeach; ?>
 <?php endif; ?>
 <a href="../index.php">&#8592; Voltar</a>
 <?php require_once 'footer.php'; ?>
-</body>
-</html>

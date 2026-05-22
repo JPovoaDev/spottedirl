@@ -9,25 +9,23 @@ $success = $_SESSION['success'] ?? null; unset($_SESSION['success']);
 
 // fazemos uma query para a bd de maneira a apanahr todas as categorias, tanto primarias como secundarias
 $cats = $pdo->query("SELECT id, name, type, parent_id FROM categories ORDER BY type, name")->fetchAll(PDO::FETCH_ASSOC);
+$page_title = 'Novo Registo';
+require_once '../header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head><meta charset="UTF-8"><title>Upload – SpottedIRL</title></head>
-<body>
 <h1>Novo Registo</h1>
-<?php if ($error): ?><p style="color:red"><?= htmlspecialchars($error) ?></p><?php endif; ?>
-<?php if ($success): ?><p style="color:green"><?= htmlspecialchars($success) ?></p><?php endif; ?>
+<?php if ($error): ?><p class="error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
+<?php if ($success): ?><p class="success"><?= htmlspecialchars($success) ?></p><?php endif; ?>
 
 <!--Formulario do upload -->
 <!-- Uma vez este formulario for submetido, os dados serão processados pelo script upload_action.php -->
 <form method="POST" action="../../controllers/upload_action.php" enctype="multipart/form-data">
-    <label>Ficheiro (foto/vídeo/áudio):<br>
+    <label>Ficheiro (foto/vídeo/áudio):
         <input type="file" name="ficheiro" required accept="image/*,video/*,audio/*">
-    </label><br><br>
+    </label>
 
-    <label>Descrição:<br>
-        <textarea name="descricao" required></textarea>
-    </label><br><br>
+    <label>Descrição:
+        <textarea name="descricao" rows="4" required></textarea>
+    </label>
 
     <label>Categoria principal:
         <select name="categoria_principal">
@@ -39,7 +37,7 @@ $cats = $pdo->query("SELECT id, name, type, parent_id FROM categories ORDER BY t
                 <?php endif; ?>
             <?php endforeach; ?>
         </select>
-    </label><br><br>
+    </label>
 
     <label>Categoria secundária:
         <select name="categoria_secundaria">
@@ -50,16 +48,16 @@ $cats = $pdo->query("SELECT id, name, type, parent_id FROM categories ORDER BY t
                 <?php endif; ?>
             <?php endforeach; ?>
         </select>
-    </label><br><br>
+    </label>
 
-    <label>Localização: <input type="text" name="localizacao"></label><br><br>
+    <label>Localização: <input type="text" name="localizacao"></label>
     <label>Hora do dia:
         <select name="hora_do_dia">
             <option value="manha">Manhã</option>
             <option value="tarde">Tarde</option>
             <option value="noite">Noite</option>
         </select>
-    </label><br><br>
+    </label>
 
     <label>Raridade:
         <select name="raridade">
@@ -67,17 +65,20 @@ $cats = $pdo->query("SELECT id, name, type, parent_id FROM categories ORDER BY t
             <option value="raro">Raro</option>
             <option value="excecional">Excecional</option>
         </select>
-    </label><br><br>
+    </label>
 
     <label>Visibilidade:
         <select name="visibilidade">
             <option value="publico">Público</option>
             <option value="privado">Privado</option>
         </select>
-    </label><br><br>
+    </label>
 
-    <button type="submit">Publicar</button>
+    <button type="submit" class="btn">Publicar</button>
 </form>
-<a href="dashboard.php">← Voltar</a>
-</body>
-</html>
+
+<div style="margin-top: 20px;">
+<a href="dashboard.php" class="btn btn-secondary">← Voltar ao painel</a>
+</div>
+
+<?php require_once '../footer.php'; ?>

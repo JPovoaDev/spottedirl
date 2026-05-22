@@ -26,18 +26,13 @@ $stmt = $pdo->query(
      ORDER BY c.name"
 );
 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$page_title = 'Categorias Principais';
+require_once '../header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <title>Categorias Principais – Admin</title>
-</head>
-<body>
 <h1>Gestão de Categorias Principais</h1>
 
-<?php if ($error):   ?><p style="color:red"><?= htmlspecialchars($error) ?></p><?php endif; ?>
-<?php if ($success): ?><p style="color:green"><?= htmlspecialchars($success) ?></p><?php endif; ?>
+<?php if ($error):   ?><p class="error"><?= htmlspecialchars($error) ?></p><?php endif; ?>
+<?php if ($success): ?><p class="success"><?= htmlspecialchars($success) ?></p><?php endif; ?>
 
 <!-- formulário de criação de uma nova categoria principal -->
 <!-- o campo hidden action diz ao category_action.php qual a operação a executar -->
@@ -46,7 +41,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <form method="POST" action="../../controllers/category_action.php">
     <input type="hidden" name="action" value="create">
     <label>Nome: <input type="text" name="name" required></label>
-    <button type="submit">Criar</button>
+    <button type="submit" class="btn">Criar</button>
 </form>
 
 <!-- listz de todas as categorias principais existentes na base de dados -->
@@ -70,7 +65,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <input type="hidden" name="action" value="update">
                         <input type="hidden" name="id" value="<?= $cat['id'] ?>">
                         <input type="text" name="name" value="<?= htmlspecialchars($cat['name']) ?>" required>
-                        <button type="submit">Guardar</button>
+                        <button type="submit" class="btn">Guardar</button>
                     </form>
                 </td>
                 <td><?= htmlspecialchars($cat['criado_por'] ?? '—') ?></td>
@@ -82,7 +77,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                           onsubmit="return confirm('Apagar categoria e todas as secundárias?')">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="id" value="<?= $cat['id'] ?>">
-                        <button type="submit" style="color:red">Apagar</button>
+                        <button type="submit" class="btn" style="background-color: #dc3545;">Apagar</button>
                     </form>
                 </td>
             </tr>
@@ -91,6 +86,8 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </table>
 <?php endif; ?>
 
-<a href="dashboard.php">← Voltar ao painel</a>
-</body>
-</html>
+<div style="margin-top: 20px;">
+<a href="dashboard.php" class="btn btn-secondary">← Voltar ao painel</a>
+</div>
+
+<?php require_once '../footer.php'; ?>

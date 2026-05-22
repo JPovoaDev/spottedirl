@@ -56,3 +56,17 @@ function require_role(string $min_role): void {
         exit; // o exit para a execução do PHP mesmo após o redirect
     }
 }
+
+function safe_redirect(string $fallback): void {
+    $ref = $_SERVER['HTTP_REFERER'] ?? '';
+    $safe_ref = $fallback;
+    if ($ref && filter_var($ref, FILTER_VALIDATE_URL)) {
+        $ref_host = parse_url($ref, PHP_URL_HOST);
+        $own_host = $_SERVER['HTTP_HOST'] ?? '';
+        if ($ref_host === $own_host) {
+            $safe_ref = $ref;
+        }
+    }
+    header("Location: $safe_ref");
+    exit;
+}

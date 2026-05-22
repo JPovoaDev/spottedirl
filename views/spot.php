@@ -43,19 +43,14 @@ if ($user_id && $user_id != $spot['user_id']) {
 $cfg_stmt = $pdo->prepare("SELECT config_value FROM system_config WHERE config_key = 'deepl_api_key'");
 $cfg_stmt->execute();
 $has_deepl = (bool)$cfg_stmt->fetchColumn();
-?>
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <title><?= htmlspecialchars($spot['description']) ?> – SpottedIRL</title>
-</head>
-<body>
-<?php require_once 'header.php'; ?>
+$page_title = $spot['description'];
+require_once 'header.php'; ?>
 
-<a href="../index.php">&#8592; Voltar</a>
-<h1><?= htmlspecialchars($spot['description']) ?></h1>
-<p>Por: <?= htmlspecialchars($spot['username']) ?> | <?= htmlspecialchars($spot['created_at']) ?></p>
+<a href="../index.php" class="btn btn-secondary" style="margin-bottom: 20px;">&#8592; Voltar</a>
+
+<div class="spot-detail">
+    <h1><?= htmlspecialchars($spot['description']) ?></h1>
+    <p>Por: <strong><?= htmlspecialchars($spot['username']) ?></strong> | <?= htmlspecialchars($spot['created_at']) ?></p>
 
 <?php if ($spot['visibility'] === 'privado'): ?>
     <p style="color:orange"><em>Este registo é privado e só tu o consegues ver.</em></p>
@@ -65,16 +60,16 @@ $has_deepl = (bool)$cfg_stmt->fetchColumn();
     <form method="POST" action="../controllers/follow_action.php" style="display:inline">
         <input type="hidden" name="action" value="<?= $is_following ? 'unfollow' : 'follow' ?>">
         <input type="hidden" name="followed_id" value="<?= $spot['user_id'] ?>">
-        <button type="submit"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
+        <button type="submit" class="btn"><?= $is_following ? 'Deixar de seguir' : 'Seguir' ?></button>
     </form>
 <?php endif; ?>
 
 <?php if ($spot['type'] === 'foto'): ?>
-    <img src="../uploads/<?= htmlspecialchars($spot['filename']) ?>" style="max-width:600px"><br>
+    <img src="../uploads/<?= htmlspecialchars($spot['filename']) ?>">
 <?php elseif ($spot['type'] === 'video'): ?>
-    <video controls style="max-width:600px">
+    <video controls>
         <source src="../uploads/<?= htmlspecialchars($spot['filename']) ?>">
-    </video><br>
+    </video>
 <?php elseif ($spot['type'] === 'audio'): ?>
     <audio controls>
         <source src="../uploads/<?= htmlspecialchars($spot['filename']) ?>">
@@ -95,8 +90,8 @@ $has_deepl = (bool)$cfg_stmt->fetchColumn();
     <option value="FR">Francês</option>
     <option value="DE">Alemão</option>
 </select>
-<button id="btn_translate" onclick="translateSpot()">Traduzir</button>
-<p id="translated_text" style="color:#333;font-style:italic"></p>
+<button id="btn_translate" class="btn" onclick="translateSpot()">Traduzir</button>
+<p id="translated_text" style="color:#333;font-style:italic;margin-top:10px;"></p>
 <script>
 function translateSpot() {
     const text = <?= json_encode($spot['description']) ?>;
@@ -116,9 +111,8 @@ function translateSpot() {
 <?php endif; ?>
 
 <?php if ($user_id && (int)$spot['user_id'] === $user_id): ?>
-    <br><a href="simpatizante/edit_spot.php?id=<?= $spot['id'] ?>">Editar este registo</a>
+    <br><a href="simpatizante/edit_spot.php?id=<?= $spot['id'] ?>" class="btn">Editar este registo</a>
 <?php endif; ?>
+</div>
 
 <?php require_once 'footer.php'; ?>
-</body>
-</html>
