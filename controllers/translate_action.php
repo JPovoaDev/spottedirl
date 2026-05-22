@@ -1,13 +1,11 @@
 <?php
-// endpoint AJAX para tradução via DeepL — chamado com fetch() nas views de detalhe de um spot
 session_start();
 require_once '../db.php';
 require_once '../auth.php';
 
 header('Content-Type: application/json');
 
-// só utilizadores autenticados podem consumir a API DeepL
-if (!has_role('user')) {
+if (!isset($_SESSION['user_id'])) {
     echo json_encode(['error' => 'Autenticação necessária.']);
     exit;
 }
@@ -25,33 +23,28 @@ if (!$text) {
     exit;
 }
 
-// buscar a chave DeepL guardada pelo admin na system_config
-$cfg = $pdo->prepare("SELECT config_value FROM system_config WHERE config_key = 'deepl_api_key'");
-$cfg->execute();
-$row = $cfg->fetch(PDO::FETCH_ASSOC);
-$api_key = $row['config_value'] ?? '';
+// mapa de códigos para o formato do MyMemory (pt|en, pt|es, etc)
+$lang_map = [
+    'EN' => 'en',
+    'ES' => 'es',
+    'FR' => 'fr',
+    'DE' => 'de',
+    'IT' => 'it',
+];
+$target_code = $lang_map[$target] ?? 'en';
 
-if (!$api_key) {
-    echo json_encode(['error' => 'API de tradução não configurada.']);
-    exit;
-}
+$url = 'https://api.mymemory.translated.net/get?q=' . urlencode($text) . '&langpair=pt|' . $target_code;
 
-// chamada à API DeepL Free
-$ch = curl_init('https://api-free.deepl.com/v2/translate');
+$ch = curl_init($url);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST           => true,
-    CURLOPT_POSTFIELDS     => http_build_query([
-        'auth_key'    => $api_key,
-        'text'        => $text,
-        'target_lang' => strtoupper($target),
-    ]),
+    CURLOPT_TIMEOUT        => 10,
 ]);
 $res  = curl_exec($ch);
 curl_close($ch);
 
 $data       = json_decode($res, true);
-$translated = $data['translations'][0]['text'] ?? null;
+$translated = $data['responseData']['translatedText'] ?? null;
 
 if (!$translated) {
     echo json_encode(['error' => 'Erro na tradução.']);

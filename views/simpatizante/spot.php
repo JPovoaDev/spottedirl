@@ -86,9 +86,10 @@ if (!empty($_SESSION['user_id'])) {
 <p>Hora do dia: <?= htmlspecialchars($metas['hora_do_dia'] ?? '&mdash;') ?></p>
 <p>Raridade: <?= htmlspecialchars($metas['raridade'] ?? '&mdash;') ?></p>
 
-<?php if ($has_deepl): ?>
+
 <hr>
 <h2>Traduzir descrição</h2>
+<p><strong>Original:</strong> <?= htmlspecialchars($spot['description']) ?></p>
 <select id="target_lang">
     <option value="EN">Inglês</option>
     <option value="ES">Espanhol</option>
@@ -113,11 +114,21 @@ function translateSpot() {
     .catch(() => { out.textContent = 'Erro de ligação.'; });
 }
 </script>
-<?php endif; ?>
+
 
 <!-- se o registo pertencer ao utilizador atual mostramos um link direto para editar -->
 <?php if ((int)$spot['user_id'] === (int)$user_id): ?>
     <br><a href="edit_spot.php?id=<?= $spot['id'] ?>">Editar este registo</a>
 <?php endif; ?>
+<?php if ($spot['visibility'] === 'publico'): ?>
+<?php
+$url_spot = 'http://' . $_SERVER['HTTP_HOST'] . '/views/simpatizante/spot.php?id=' . $spot['id'];
+$texto    = urlencode($spot['description']);
+$url_enc  = urlencode($url_spot);
+?>
+| <a href="https://www.facebook.com/sharer/sharer.php?u=<?= $url_enc ?>" target="_blank">Facebook</a>
+| <a href="https://twitter.com/intent/tweet?text=<?= $texto ?>&url=<?= $url_enc ?>" target="_blank">Twitter</a>
+<?php endif; ?>
 </body>
+
 </html>

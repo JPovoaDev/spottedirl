@@ -13,11 +13,17 @@ function get_smtp_config(PDO $pdo): array {
 }
 
 function send_email(PDO $pdo, string $to, string $subject, string $body): bool {
+    error_log("send_email chamado para: $to");
     $cfg       = get_smtp_config($pdo);
     $from      = $cfg['smtp_from']      ?? '';
     $from_name = $cfg['smtp_from_name'] ?? 'SpottedIRL';
 
-    if (!$from || !$to) return false;
+    error_log("smtp_from: $from");
+
+    if (!$from || !$to) {
+        error_log("send_email abortou: from ou to vazios");
+        return false;
+    }
 
     // No Linux com sendmail configurado, mail() usa o agente do sistema directamente
     // Não é necessário ini_set de SMTP/smtp_port — esses settings são apenas para Windows
@@ -47,19 +53,25 @@ function notify_new_spot(PDO $pdo, int $spot_id, int $uploader_id): void {
     ";
 
     $notified = [];
+    error_log("notify_new_spot chamado: spot_id=$spot_id uploader_id=$uploader_id");
 
-    // seguidores do uploader
-    $followers = $pdo->prepare(
-        "SELECT u.email FROM follows f
-         JOIN users u ON u.id = f.follower_id
-         WHERE f.followed_id = ? AND u.is_active = 1"
-    );
-    $followers->execute([$uploader_id]);
-    foreach ($followers->fetchAll(PDO::FETCH_ASSOC) as $row) {
-        if (!in_array($row['email'], $notified)) {
+    // ADICIONAR ISTO
+    try {
+        $followers = $pdo->prepare(
+            "SELECT u.email FROM user_follows f
+            JOIN users u ON u.id = f.user_id
+            WHERE f.simpatizante_id = ? AND u.is_active = 1"
+        );
+        $followers->execute([$uploader_id]);
+        $rows = $followers->fetchAll(PDO::FETCH_ASSOC);
+        error_log("Seguidores encontrados: " . count($rows));
+        foreach ($rows as $row) {
+            error_log("A notificar: " . $row['email']);
             send_email($pdo, $row['email'], $subject, $body);
             $notified[] = $row['email'];
         }
+    } catch (Exception $e) {
+        error_log("ERRO seguidores: " . $e->getMessage());
     }
 
     // subscritores das categorias do spot

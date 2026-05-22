@@ -27,6 +27,7 @@ require_role('simpatizante');
 
 <!-- a página de perfil permite ao simpatizante ver os seus dados e alterar a visibilidade do perfil -->
 <a href="profile.php">O meu perfil</a> |
+<a href="../../controllers/logout.php">Logout</a><hr>
 
 <h2>Registos recentes</h2>
 <?php
@@ -61,7 +62,7 @@ if (empty($spots)): ?>
              <strong><?= htmlspecialchars($spot['username']) ?></strong>
         <?php endif; ?>
         <?php
-        $chk = $pdo->prepare("SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?");
+        $chk = $pdo->prepare("SELECT 1 FROM user_follows WHERE user_id = ? AND simpatizante_id = ?");
         $chk->execute([$_SESSION['user_id'], $spot['user_id']]);
         $is_following = (bool)$chk->fetchColumn();
         ?>
@@ -88,6 +89,15 @@ if (empty($spots)): ?>
         <?php endif; ?>
         <?= htmlspecialchars($spot['description']) ?><br>
         <a href="spot.php?id=<?= $spot['id'] ?>">Ver detalhe</a>
+        <?php if ($spot['visibility'] === 'publico'): ?>
+        <?php
+        $url_spot = 'http://' . $_SERVER['HTTP_HOST'] . '/views/simpatizante/spot.php?id=' . $spot['id'];
+        $texto    = urlencode($spot['description']);
+        $url_enc  = urlencode($url_spot);
+        ?>
+        | <a href="https://www.facebook.com/sharer/sharer.php?u=<?= $url_enc ?>" target="_blank">Facebook</a>
+        | <a href="https://twitter.com/intent/tweet?text=<?= $texto ?>&url=<?= $url_enc ?>" target="_blank">Twitter</a>
+<?php endif; ?>
             </div>
 <?php endforeach; ?>
 <?php endif; ?>

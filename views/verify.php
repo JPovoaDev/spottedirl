@@ -32,6 +32,10 @@ $success = $_SESSION['success'] ?? null; unset($_SESSION['success']);
             <input type="text" name="token" required maxlength="6" pattern="[0-9]{6}" placeholder="123456" autocomplete="off" style="font-size: 1.2rem; letter-spacing: 4px; text-align: center; width: 120px;">
         </label><br><br>
         <button type="submit">Confirmar</button>
+        <br>
+    <form method="POST" action="../controllers/resend_verification.php">
+    <button type="submit">Não recebi o email — reenviar código</button>
+</form>
     </form>
     <br>
     <a href="login.php">Voltar para o Login</a>

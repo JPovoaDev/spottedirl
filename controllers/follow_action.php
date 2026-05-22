@@ -18,10 +18,10 @@ if (!$followed_id || $followed_id === (int)$_SESSION['user_id']) {
 }
 
 if ($action === 'follow') {
-    $pdo->prepare("INSERT IGNORE INTO follows (follower_id, followed_id) VALUES (?, ?)")
+    $pdo->prepare("INSERT IGNORE INTO user_follows (user_id, simpatizante_id) VALUES (?, ?)")
         ->execute([$_SESSION['user_id'], $followed_id]);
 } elseif ($action === 'unfollow') {
-    $pdo->prepare("DELETE FROM follows WHERE follower_id = ? AND followed_id = ?")
+    $pdo->prepare("DELETE FROM user_follows WHERE user_id = ? AND simpatizante_id = ?")
         ->execute([$_SESSION['user_id'], $followed_id]);
 }
 

@@ -2,7 +2,15 @@
 // Página de detalhe de um spot para utilizadores com perfil user
 // Visível para públicos por qualquer um; privados só pelo dono
 session_start();
-require_once '../../db.php';
+require_once '../db.php';
+require_once '../auth.php';
+
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['error' => 'Autenticação necessária.']);
+    exit;
+}
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) {
@@ -86,9 +94,10 @@ $has_deepl = (bool)$cfg_stmt->fetchColumn();
 <p>Hora do dia: <?= htmlspecialchars($metas['hora_do_dia'] ?? '&mdash;') ?></p>
 <p>Raridade: <?= htmlspecialchars($metas['raridade'] ?? '&mdash;') ?></p>
 
-<?php if ($has_deepl): ?>
+
 <hr>
 <h2>Traduzir descrição</h2>
+<p><strong>Original:</strong> <?= htmlspecialchars($spot['description']) ?></p>
 <select id="target_lang">
     <option value="EN">Inglês</option>
     <option value="ES">Espanhol</option>
@@ -112,7 +121,16 @@ function translateSpot() {
     .then(d => { out.textContent = d.translated ?? d.error ?? 'Erro.'; })
     .catch(() => { out.textContent = 'Erro de ligação.'; });
 }
+
 </script>
+<?php if ($spot['visibility'] === 'publico'): ?>
+<?php
+$url_spot = 'http://' . $_SERVER['HTTP_HOST'] . '/views/simpatizante/spot.php?id=' . $spot['id'];
+$texto    = urlencode($spot['description']);
+$url_enc  = urlencode($url_spot);
+?>
+| <a href="https://www.facebook.com/sharer/sharer.php?u=<?= $url_enc ?>" target="_blank">Facebook</a>
+| <a href="https://twitter.com/intent/tweet?text=<?= $texto ?>&url=<?= $url_enc ?>" target="_blank">Twitter</a>
 <?php endif; ?>
 
 </body>
