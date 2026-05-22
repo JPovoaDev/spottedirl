@@ -1,5 +1,5 @@
 <?php
-// controlador para guardar as configurações de email do sistema — só o admin tem acesso
+// controlador para guardar as configurações de email do sistemae e por isso só o admin tem acesso
 session_start();
 require_once '../db.php';
 require_once '../auth.php';

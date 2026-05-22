@@ -8,6 +8,7 @@ session_start();
 // mostramos os header e footer com base nos seus ficheiros e chamamos a base de dados
 require_once 'db.php';
 
+// header, conteudo principal da homepage, footer
 require_once 'views/header.php';
 require_once 'views/index.php';
 require_once 'views/footer.php';

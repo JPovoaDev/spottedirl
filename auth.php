@@ -5,18 +5,18 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// pra diferenciarmos os tipos de utilizadores que temos decidimos fazer uma espécie de dicionário com pesos, ou seja,
+// para diferenciarmos os tipos de utilizadores que temos decidimos fazer uma espécie de dicionário com pesos, ou seja,
 // o utilizador comum não tem permissões para alem do básico, então só pode aceder ao seu nivel 0, mas o utilizador admin
 // já tem acesso a tudo o que seja possível, então é o nível maior que houver e portanto tem acesso a todos os níveis inferiores
 // como uma pirâmide de pesos, quanto maior, mais permissões
 const ROLE_WEIGHT = [
-    'guest'        => 0,
-    'user'         => 1,
+    'guest' => 0,
+    'user' => 1,
     'simpatizante' => 2,
-    'admin'        => 3,
+    'admin' => 3,
 ];
 
-// isto devolve o perfil do utilizador atual, por default o utilizador é um guest, e então atribuímos isso caso não tenha role
+// isto devolve o perfil do utilizador atual, por default o utilizador é um guest e então atribuímos isso caso não tenha role
 // porque basicamente se não estiver logged in é tratado como guest
 function current_role(): string {
     return $_SESSION['role'] ?? 'guest';
@@ -29,9 +29,6 @@ function has_role(string $min_role): bool {
     $current = ROLE_WEIGHT[current_role()] ?? 0; // caso o utilizador não tenha uma role é tratado como convidado
     $needed = ROLE_WEIGHT[$min_role];
     return $current >= $needed;
-}
-
-
 
 // esta é a função principal que usamos nas páginas que são protegidas e tem duas verificações:
 function require_role(string $min_role): void {
@@ -57,12 +54,21 @@ function require_role(string $min_role): void {
     }
 }
 
+// esta função serve para redirecionarmos o utilizador para a página anterior de forma segura ou para uma página default (fallback)
+// usamos o HTTP_REFERER que é o cabeçalho que diz de onde o utilizador veio, mas como este valor pode ser 
+// manipulado por hackers, primeiro validamos se é um URL válido e se o domínio de origem é o mesmo do nosso 
+// site (que é local host) e assim prevenimos ataques do tipo "Open Redirect" (redirecionamentos para site externo)
 function safe_redirect(string $fallback): void {
+    // vamos apanhar a página anterior de onde o utilizador veio
     $ref = $_SERVER['HTTP_REFERER'] ?? '';
-    $safe_ref = $fallback;
+    $safe_ref = $fallback; // usamos a página de fallback just in case
+    
+    // vemos se o link de onde o utilizador veio é bem formatado e verdadeiro
     if ($ref && filter_var($ref, FILTER_VALIDATE_URL)) {
-        $ref_host = parse_url($ref, PHP_URL_HOST);
-        $own_host = $_SERVER['HTTP_HOST'] ?? '';
+        $ref_host = parse_url($ref, PHP_URL_HOST); // domínio do site (hacker.com ou localhost)
+        $own_host = $_SERVER['HTTP_HOST'] ?? ''; //extraímos o nosso domínio (localhost porque é o servidor)
+        
+        // se a condição se verificar é seguro mandá-lo de volta para a página de onde ele clicou no botão
         if ($ref_host === $own_host) {
             $safe_ref = $ref;
         }

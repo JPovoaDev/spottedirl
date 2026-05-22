@@ -1,6 +1,6 @@
 <?php
-// este controlador trata de todas as operações de gestão de utilizadores feitas pelo admin
-// promoção de perfil, remoção de perfil, suspensão, reativação e eliminação de conta passam todas por aqui
+// este controlador trata de todas as operações de gestão de utilizadores feitas pelo admin:
+// promoção de perfil, remoção de perfil, suspensão, reativação e eliminação de conta
 session_start();
 require_once '../db.php';
 require_once '../auth.php';
@@ -11,10 +11,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// todas as operações deste controlador são única ao admin
+// todas as operações deste controlador são únicas ao admin
 require_role('admin');
 
-$action  = $_POST['action']  ?? '';
+// apanhamos o que o admin quer fazer através do que foi submetido no formulário
+$action = $_POST['action'] ?? '';
+// qual utilizador vai sofrer a ação
 $user_id = (int)($_POST['user_id'] ?? 0);
 
 if (!$user_id) {
@@ -37,14 +39,16 @@ switch ($action) {
         // só faz sentido promover utilizadores com perfil user, se já for simpatizante ou admin não fazemos nada
         $chk = $pdo->prepare("SELECT role FROM users WHERE id = ?");
         $chk->execute([$user_id]);
-        $target = $chk->fetch(PDO::FETCH_ASSOC);
+        $target = $chk->fetch(PDO::FETCH_ASSOC); // apanhamos o user e todos os seus dados
 
+        // tem que ser um user
         if (!$target || $target['role'] !== 'user') {
             $_SESSION['error'] = 'Só é possível promover utilizadores com perfil user.';
             header('Location: ../views/admin/users.php');
             exit;
         }
 
+        // agora atualizamos a role do user para simpatizante
         $stmt = $pdo->prepare("UPDATE users SET role = 'simpatizante' WHERE id = ?");
         $stmt->execute([$user_id]);
         $_SESSION['success'] = 'Utilizador promovido a simpatizante.';
@@ -57,12 +61,14 @@ switch ($action) {
         $chk->execute([$user_id]);
         $target = $chk->fetch(PDO::FETCH_ASSOC);
 
+        // já tem que ser um simpatizante
         if (!$target || $target['role'] !== 'simpatizante') {
             $_SESSION['error'] = 'Só é possível remover o perfil de utilizadores que sejam simpatizantes.';
             header('Location: ../views/admin/users.php');
             exit;
         }
 
+        // agora atualizamos a role do simpatizante para user
         $stmt = $pdo->prepare("UPDATE users SET role = 'user' WHERE id = ?");
         $stmt->execute([$user_id]);
         $_SESSION['success'] = 'Perfil de simpatizante removido.';
@@ -70,7 +76,7 @@ switch ($action) {
         exit;
 
     case 'toggle_active':
-        // lemos o estado atual e invertemo-lo, ativo passa a suspenso e suspenso passa a ativo
+        // isto define se a conta está suspensa ou não: ativo passa a suspenso e suspenso passa a ativo
         $chk = $pdo->prepare("SELECT is_active FROM users WHERE id = ?");
         $chk->execute([$user_id]);
         $target = $chk->fetch(PDO::FETCH_ASSOC);
@@ -81,6 +87,7 @@ switch ($action) {
             exit;
         }
 
+        // como é um toggle é simples, vemos o valor atual e invertemos asseguir e atualizamos na bd
         $novo_estado = $target['is_active'] ? 0 : 1;
         $pdo->prepare("UPDATE users SET is_active = ? WHERE id = ?")->execute([$novo_estado, $user_id]);
         $_SESSION['success'] = $novo_estado ? 'Utilizador reativado.' : 'Utilizador suspenso.';
@@ -107,11 +114,12 @@ switch ($action) {
         header('Location: ../views/admin/users.php');
         exit;
 
-    // as ações de aprovação ou rejeição de pedidos de promoção a simpatizante também passam por aqui,
-    // o admin pode aprovar ou rejeitar cada pedido pendente e o controlador trata de atualizar o perfil do utilizador e o estado do pedido conforme a ação escolhida
+    // as ações de aprovação ou rejeição de pedidos de promoção a simpatizante também passam por aqui
+    // o admin pode aprovar ou rejeitar cada pedido pendente e o controlador atualiza o perfil do utilizador
+    // e o estado do pedido conforme a ação escolhida
     case 'approve_request':
-        $request_id = (int)($_POST['request_id'] ?? 0);
-        $uid        = (int)($_POST['user_id']     ?? 0);
+        $request_id = (int)($_POST['request_id'] ?? 0); // isto é o id do pedido porque na bd mudamos o valor a partir do pedido numero x
+        $uid = (int)($_POST['user_id'] ?? 0); // id do user que fez o pedido
         $pdo->prepare("UPDATE users SET role = 'simpatizante' WHERE id = ? AND role = 'user'")->execute([$uid]);
         $pdo->prepare("UPDATE role_requests SET status = 'aprovado' WHERE id = ?")->execute([$request_id]);
         $_SESSION['success'] = 'Utilizador promovido a simpatizante.';

@@ -1,6 +1,5 @@
 <?php
 // este controlador trata das operações de edição e remoção de registos feitas pelo próprio simpatizante
-// tanto a edição da descrição e visibilidade como o apagar completo passam por aqui
 session_start();
 require_once '../db.php';
 require_once '../auth.php';

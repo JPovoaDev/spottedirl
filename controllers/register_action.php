@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // lemos os campos do formulário e limpamos espaços desnecessários com o trim no username e email
 // na password não usamos trim porque um espaço no início ou no fim pode ser intencional
 $username = trim($_POST['username'] ?? '');
-$email    = trim($_POST['email'] ?? '');
+$email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
 // validamos que nenhum campo chegou vazio antes de fazer qualquer operação na base de dados
@@ -66,16 +66,19 @@ $stmt = $pdo->prepare(
 $stmt->execute([$username, $email, $hash]);
 $user_id = $pdo->lastInsertId();
 
-// Gerar código de confirmação de 6 dígitos
-$token   = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+// criamos o código de confirmação de 6 dígitos como temos no resend verification
+// geramos um número entre 0 e 999999 e se for gerado "42" o str_pad acrescenta zeros à esquerda até ficarem 6 dígitos
+$token = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+// damos uma margem de 30 minutos para o user confirmar a conta e usar o token
 $expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
 
+// guardamos este novo código e a respetiva data de expiração na base de dados associados ao utilizador
 $pdo->prepare(
     "INSERT INTO email_verifications (user_id, token, expires_at)
      VALUES (?, ?, ?)"
 )->execute([$user_id, $token, $expires]);
 
-// Enviar email com o código
+// e enviamos o email com o código, chamando a nossa função já feita
 require_once 'notify_helper.php';
 $subject = "Confirma a tua conta - SpottedIRL";
 $body = "
@@ -86,6 +89,10 @@ $body = "
 ";
 send_email($pdo, $email, $subject, $body);
 
+// guardamos temporariamente o id do utilizador na sessão para saber quem está a tentar verificar a conta
+// neste momento o utilizador ainda não tem login iniciado (não tem $_SESSION['user_id'] verdadeiro),
+// este "pending_user_id" vai ser usado pelo verify_action.php na página seguinte
+// para saber de quem é o código de ativação que for submetido
 $_SESSION['pending_user_id'] = $user_id;
 $_SESSION['success'] = 'Conta criada com sucesso. Verifica o teu email para obter o código de ativação!';
 header('Location: ../views/verify.php');

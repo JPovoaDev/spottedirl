@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 // esta página é acessível tanto a utilizadores comuns como a simpatizantes, o que muda é o redirecionamento no final para o perfil certo
-//os utilizadores tem acesso ao perfil de maneira a pedirem promoção a simpatizante
 require_role('user');
 
 $action = $_POST['action'] ?? '';
@@ -61,7 +60,7 @@ if ($action === 'toggle_visibility') {
     exit;
 }
 
-// fallback: redireciona para a página certa
+// caso tivermos chegado até redirecionamos para a página da role do user
 $role = $_SESSION['role'] ?? '';
 $dest = $role === 'simpatizante'
     ? '../views/simpatizante/profile.php'
