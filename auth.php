@@ -29,6 +29,7 @@ function has_role(string $min_role): bool {
     $current = ROLE_WEIGHT[current_role()] ?? 0; // caso o utilizador não tenha uma role é tratado como convidado
     $needed = ROLE_WEIGHT[$min_role];
     return $current >= $needed;
+}
 
 // esta é a função principal que usamos nas páginas que são protegidas e tem duas verificações:
 function require_role(string $min_role): void {
