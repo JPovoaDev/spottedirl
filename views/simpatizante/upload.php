@@ -24,7 +24,7 @@ require_once '../header.php';
     </label>
 
     <label>Descrição:
-        <textarea name="descricao" rows="4" required></textarea>
+        <textarea name="descricao" rows="4" required maxlength="1000"></textarea>
     </label>
 
     <label>Categoria principal:
@@ -50,7 +50,7 @@ require_once '../header.php';
         </select>
     </label>
 
-    <label>Localização: <input type="text" name="localizacao"></label>
+    <label>Localização: <input type="text" name="localizacao" maxlength="255"></label>
     <label>Hora do dia:
         <select name="hora_do_dia">
             <option value="manha">Manhã</option>

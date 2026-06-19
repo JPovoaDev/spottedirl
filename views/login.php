@@ -19,8 +19,8 @@ session_start();
 
     <!-- usamos method POST para os dados não aparecerem no URL -->
     <form method="POST" action="../controllers/login_action.php">
-        <label>Username: <input type="text" name="username" required></label>
-        <label>Password: <input type="password" name="password" required></label>
+        <label>Username: <input type="text" name="username" required minlength="3" maxlength="50"></label>
+        <label>Password: <input type="password" name="password" required minlength="6"></label>
         <button type="submit">Entrar</button>
     </form>
     <a href="register.php">Criar conta</a>

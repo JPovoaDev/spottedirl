@@ -17,10 +17,19 @@ $username = trim($_POST['username'] ?? '');
 $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
+$captcha = $_POST['captcha'] ?? '';
+
 // validamos que nenhum campo chegou vazio antes de fazer qualquer operação na base de dados
 // não faz sentido ir à BD verificar duplicados se os campos estiverem vazios
-if (!$username || !$email || !$password) {
+if (!$username || !$email || !$password || !$captcha) {
     $_SESSION['error'] = 'Preenche todos os campos.';
+    header('Location: ../views/register.php');
+    exit;
+}
+
+// verificar CAPTCHA
+if (!isset($_SESSION['captcha_code']) || $_SESSION['captcha_code'] !== $captcha) {
+    $_SESSION['error'] = 'CAPTCHA incorreto. Tenta novamente.';
     header('Location: ../views/register.php');
     exit;
 }
